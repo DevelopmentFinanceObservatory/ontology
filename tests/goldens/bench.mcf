@@ -1,0 +1,66 @@
+# bench: testing (https://dfo-testing-2.wikibase.cloud)
+
+Node: dcid:AFD
+typeOf: schema:Organization
+name: "Agence Française de Développement"
+description: "France's bilateral development agency. An organisation entity, typed by the Data Commons Organization class."
+alternateName: "AFD"
+
+Node: dcid:FinancingActivity
+typeOf: schema:Class
+name: "financing activity"
+description: "A single act of development finance — the thing purpose, participant and amount statements are made about."
+subClassOf: schema:Thing
+
+Node: dcid:FinancingPurposeEnum
+typeOf: schema:Class
+name: "financing purpose"
+description: "The purpose a financing activity serves. Root of the purpose value lists; narrower lists sit under it."
+subClassOf: schema:Enumeration
+
+Node: dcid:CRSPurposeEnum
+typeOf: schema:Class
+name: "CRS purpose"
+description: "Purpose as coded by the OECD DAC Creditor Reporting System. Narrows financing purpose."
+subClassOf: dcid:FinancingPurposeEnum
+
+Node: dcid:CRSPurposeEducation
+typeOf: dcid:CRSPurposeEnum
+name: "education (CRS purpose)"
+description: "The education sector as a whole, including basic education."
+alternateName: "110"
+
+Node: dcid:CRSPurposeBasicEducation
+typeOf: dcid:CRSPurposeEnum
+name: "basic education (CRS purpose)"
+description: "Primary education and basic life skills, within education."
+alternateName: "112"
+specializationOf: dcid:CRSPurposeEducation
+
+Node: dcid:CRSPurposeHealth
+typeOf: dcid:CRSPurposeEnum
+name: "health (CRS purpose)"
+description: "The health sector as a whole, including basic health."
+alternateName: "120"
+
+Node: dcid:CRSPurposeBasicHealth
+typeOf: dcid:CRSPurposeEnum
+name: "basic health (CRS purpose)"
+description: "Primary health care and basic health services, within health."
+alternateName: "122"
+specializationOf: dcid:CRSPurposeHealth
+
+Node: dcid:financingPurpose
+typeOf: schema:Property
+name: "financing purpose"
+description: "The purpose a financing activity serves. Takes any value from the financing purpose list."
+domainIncludes: dcid:FinancingActivity
+rangeIncludes: dcid:FinancingPurposeEnum
+
+Node: dcid:crsPurpose
+typeOf: schema:Property
+name: "CRS purpose"
+description: "The activity's purpose stated as a CRS purpose code. Narrows financing purpose."
+subPropertyOf: dcid:financingPurpose
+domainIncludes: dcid:FinancingActivity
+rangeIncludes: dcid:CRSPurposeEnum

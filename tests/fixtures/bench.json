@@ -1,0 +1,1505 @@
+[
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "ID"
+        }
+      ]
+    },
+    "claims": {},
+    "datatype": "string",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The node's identifier for DFO nodes. camelCase for a property, PascalCase for a class or individual, value lists end in Enum. Do not use for preexisting nodes in Data Commons"
+      }
+    },
+    "id": "P1",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "id"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "DCID"
+        }
+      ]
+    },
+    "claims": {},
+    "datatype": "external-id",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The global Data Commons node this entity refers to, prefix included."
+      }
+    },
+    "id": "P2",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "dcid"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "typeOf"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P3$2829A6B2-6B6B-41D3-88B6-320367EC0499",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:typeOf"
+            },
+            "hash": "fa3c9b171e9320bb47e0b7edb8114489d40cd4e3",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "What this node is: Class for a kind of thing or a value list, Property for a dimension, its value list for a value, or its class for an individual."
+      }
+    },
+    "id": "P3",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "type of"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "subClassOf"
+        },
+        {
+          "language": "en",
+          "value": "subclass"
+        },
+        {
+          "language": "en",
+          "value": "subclassof"
+        },
+        {
+          "language": "en",
+          "value": "sub class"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P4$4181E915-092F-443A-815D-DF290B609A04",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:subClassOf"
+            },
+            "hash": "77764a31115759ddf0c05dcedae735444a9c39dc",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The broader class this one sits under. Every class must reach Thing or Enumeration through a chain of these; a value list points at Enumeration, or at a broader list to narrow it."
+      }
+    },
+    "id": "P4",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "sub class of"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "subPropertyOf"
+        },
+        {
+          "language": "en",
+          "value": "sub property"
+        },
+        {
+          "language": "en",
+          "value": "subproperty"
+        },
+        {
+          "language": "en",
+          "value": "subpropertyof"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P5$F87BCD6D-8390-43D5-B2CE-EF62167A8667",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:subPropertyOf"
+            },
+            "hash": "a3510878395e03762f126522770de463fa80ea8e",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The broader property this one narrows. Both ends must be properties."
+      }
+    },
+    "id": "P5",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "sub property of"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "domainIncludes"
+        },
+        {
+          "language": "en",
+          "value": "domain"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P6$205071F1-A522-4D40-8609-5DBA3681B01B",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:domainIncludes"
+            },
+            "hash": "e9ee31a5c01431c94c91ea2f986197a38c3b0476",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The kind of thing this property describes: the class its subject belongs to. financingPurpose describes a FinancingActivity."
+      }
+    },
+    "id": "P6",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "domain includes"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "range"
+        },
+        {
+          "language": "en",
+          "value": "rangeIncludes"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P7$21112DE1-3182-408C-BBA1-9CF970BD3DED",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:rangeIncludes"
+            },
+            "hash": "7d20e59b3f1487533a878d0bde9a8f2ca710a58d",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The kind of value this property takes: a value list, the class its entities belong to, or a primitive (Text, Number,  Boolean, Date, DateTime, Time)."
+      }
+    },
+    "id": "P7",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "range includes"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "specialisation of"
+        },
+        {
+          "language": "en",
+          "value": "specialization"
+        },
+        {
+          "language": "en",
+          "value": "specializationOf"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "P8$F1241D14-8DF9-455B-B6F4-48E27E0D6E77",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "dcid:specializationOf"
+            },
+            "hash": "29f2241f416c50b59d4ad1ebcaa335cc972f9e89",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "datatype": "wikibase-item",
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "A broader value in the same value list (e.g. malaria control under basic health). This is how values nest; values never use subClassOf."
+      }
+    },
+    "id": "P8",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "specialization of"
+      }
+    },
+    "type": "property"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "class"
+        },
+        {
+          "language": "en",
+          "value": "kind"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "Q1$51B85E10-6511-434F-B327-F4576E444722",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "schema:Class"
+            },
+            "hash": "eb2d66d30faa6bc4e6340a5347eba437cf461859",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q1$1A8C6267-47AB-4815-B915-C6E6B1E5A24A",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "A kind of thing. A named set whose members share a type, like Country or FinancingActivity. Use a class for entity types whose members carry their own data; use a value list for categories you tag and slice statistics by."
+      }
+    },
+    "id": "Q1",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Class"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "122"
+        }
+      ]
+    },
+    "claims": {
+      "P1": [
+        {
+          "id": "Q10$5C913D56-DB9A-4B14-A6D1-7236BF529A58",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "CRSPurposeBasicHealth"
+            },
+            "hash": "508e920a395fd1d62aad3f382aad25179532795c",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q10$05F6E09C-022B-49D3-9F63-5B59204DB288",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q8",
+                "numeric-id": 8
+              }
+            },
+            "hash": "1191604a909e597ffe255582fb834ebc44b56465",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P8": [
+        {
+          "id": "Q10$2D03C4D8-0844-48CF-8F29-FF3ED0B0317E",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q9",
+                "numeric-id": 9
+              }
+            },
+            "hash": "fec5401488a1301bf3c6f48737945e4e0699b7c6",
+            "property": "P8",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "Primary health care and basic health services, within health."
+      }
+    },
+    "id": "Q10",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "basic health (CRS purpose)"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "110"
+        }
+      ]
+    },
+    "claims": {
+      "P1": [
+        {
+          "id": "Q11$8AD3808F-C04F-44CE-B67B-A297EA178182",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "CRSPurposeEducation"
+            },
+            "hash": "8dae4bab2a90645978fd75d0c5eaa7436fcee0db",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q11$6FBFC6A6-B26F-4889-B426-81DD478E19D1",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q8",
+                "numeric-id": 8
+              }
+            },
+            "hash": "1191604a909e597ffe255582fb834ebc44b56465",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The education sector as a whole, including basic education."
+      }
+    },
+    "id": "Q11",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "education (CRS purpose)"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "112"
+        }
+      ]
+    },
+    "claims": {
+      "P1": [
+        {
+          "id": "Q12$0AD422F1-F4D9-4D60-84D0-6F3149FB897E",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "CRSPurposeBasicEducation"
+            },
+            "hash": "0fdb1dffda1cff28d22ae1b319aabb07cc430771",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q12$E01BEFBD-80FE-43F3-9E17-695DD8DCFB00",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q8",
+                "numeric-id": 8
+              }
+            },
+            "hash": "1191604a909e597ffe255582fb834ebc44b56465",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P8": [
+        {
+          "id": "Q12$FB106144-8AC4-4C13-B2CB-BFD93F661D32",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q11",
+                "numeric-id": 11
+              }
+            },
+            "hash": "8b79c50e02cd980905af73caf119fbf08d0244b6",
+            "property": "P8",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "Primary education and basic life skills, within education."
+      }
+    },
+    "id": "Q12",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "basic education (CRS purpose)"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {},
+    "claims": {
+      "P1": [
+        {
+          "id": "Q13$189D2737-029B-47D8-9938-D72241A9B1F0",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "financingPurpose"
+            },
+            "hash": "bcacab5f9d092a76a29648db324cb70b3aa0070a",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q13$41C170C3-C79B-4E9C-B613-B2EC4165544C",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q2",
+                "numeric-id": 2
+              }
+            },
+            "hash": "f9833bb68274f63fc1d51dfab1c847fe9c734599",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P6": [
+        {
+          "id": "Q13$0C06F6CD-466F-4C6A-8548-51F8820E2F6A",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q6",
+                "numeric-id": 6
+              }
+            },
+            "hash": "9f4d691d7a74169ab741d80ba350bea7faf92674",
+            "property": "P6",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P7": [
+        {
+          "id": "Q13$E183269E-1FF0-4CE0-B633-9817AD6A4E64",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q7",
+                "numeric-id": 7
+              }
+            },
+            "hash": "80a03948b35fc3cf6fa072d4c4220dee5c8b4dff",
+            "property": "P7",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The purpose a financing activity serves. Takes any value from the financing purpose list."
+      }
+    },
+    "id": "Q13",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "financing purpose"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {},
+    "claims": {
+      "P1": [
+        {
+          "id": "Q14$348176EE-B2B3-4F6F-BDC0-70B2C0132ED1",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "crsPurpose"
+            },
+            "hash": "5e351ed1f180d17c26a6df1767802a49c6b0f567",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q14$B7676F20-04B9-4359-9D72-1CA375DBAF69",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q2",
+                "numeric-id": 2
+              }
+            },
+            "hash": "f9833bb68274f63fc1d51dfab1c847fe9c734599",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P5": [
+        {
+          "id": "Q14$667B42D2-5CF5-4F48-8287-9E57AFB1AA54",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q13",
+                "numeric-id": 13
+              }
+            },
+            "hash": "6fcff7239933a3a77ee44c3fea8713b36aec6eb6",
+            "property": "P5",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P6": [
+        {
+          "id": "Q14$483612E8-FD2B-4DC2-AF8B-D3A23E308F76",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q6",
+                "numeric-id": 6
+              }
+            },
+            "hash": "9f4d691d7a74169ab741d80ba350bea7faf92674",
+            "property": "P6",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P7": [
+        {
+          "id": "Q14$6AEF2D4A-941A-462B-973C-352BC3F74C00",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q8",
+                "numeric-id": 8
+              }
+            },
+            "hash": "85b41e9a061798d9f1c9818018eda8f9537b0b3a",
+            "property": "P7",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The activity's purpose stated as a CRS purpose code. Narrows financing purpose."
+      }
+    },
+    "id": "Q14",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "CRS purpose"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "AFD"
+        }
+      ]
+    },
+    "claims": {
+      "P1": [
+        {
+          "id": "Q15$1E569301-FC3D-44BE-844C-BD80FFED4DBB",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "AFD"
+            },
+            "hash": "f58f8cf1173709b642e2a14e9f6fde56ba09eb3d",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q15$4917E9B7-B7E8-4087-9E68-15130FC423F3",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q5",
+                "numeric-id": 5
+              }
+            },
+            "hash": "4c2e17bc6d4c930be2beccbf929724b2cd431f3d",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "France's bilateral development agency. An organisation entity, typed by the Data Commons Organization class."
+      }
+    },
+    "id": "Q15",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Agence Fran\u00e7aise de D\u00e9veloppement"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "property"
+        },
+        {
+          "language": "en",
+          "value": "constraint property"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "Q2$E281E3D4-70B4-4CBB-9ABC-251F3471918D",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "schema:Property"
+            },
+            "hash": "a7462938d581123852b61476342c526ee9983a9c",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q2$5ECD0B2A-12E8-4A06-959F-F4EFEF7E846E",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "A named link that puts a value on a thing \u2014 the predicate in a statement, like financingPurpose or provider. Its domain is what it may describe, its range what it may take. Most are constraint properties: defined here, used only downstream."
+      }
+    },
+    "id": "Q2",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Property"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "enumeration"
+        },
+        {
+          "language": "en",
+          "value": "value list"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "Q3$8515CF3D-5AE6-4BEF-9BE5-C359E2E6AC05",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "schema:Enumeration"
+            },
+            "hash": "b506e74483bee855fc8a2923e5b869a85a8d7f78",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q3$1C6E900E-ED27-4D07-98AB-5FAB3D775E05",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The root of the closed value lists. A value list is a class whose members are a fixed set of allowed values, like CRSPurposeEnum. Values nest with specializationOf"
+      }
+    },
+    "id": "Q3",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Enumeration"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "thing"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "Q4$22936176-7E8F-4C0B-843C-1C5B1D8DFBA6",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "schema:Thing"
+            },
+            "hash": "b3b6bf477be735b3d92724c6c3e548763cceb9d5",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q4$B10981E5-32CB-4560-9901-9F1AA9BF51FD",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The most general type in the schema. The root of the class hierarchy, with no parent of its own. A class sits directly under Thing only when no more specific parent fits"
+      }
+    },
+    "id": "Q4",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Thing"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "organisation"
+        }
+      ]
+    },
+    "claims": {
+      "P2": [
+        {
+          "id": "Q5$99A4BF6C-6811-4DBD-8978-2A945E2A9A22",
+          "mainsnak": {
+            "datatype": "external-id",
+            "datavalue": {
+              "type": "string",
+              "value": "schema:Organization"
+            },
+            "hash": "d515886150eb31ca610cc0febcac734e6eb3db76",
+            "property": "P2",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q5$C249378B-01BA-46D8-8255-4FF6C386A78A",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The global Data Commons class for organisations. Reused, not minted \u2014 DFO organisation entities are typed by it."
+      }
+    },
+    "id": "Q5",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "Organization"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {},
+    "claims": {
+      "P1": [
+        {
+          "id": "Q6$4787341E-D9F6-45AF-B060-75E2AE58F0B1",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "FinancingActivity"
+            },
+            "hash": "1ae2039a6cf8385592f85921badf2455b3f135b4",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q6$2D5347EE-AB1B-4A78-9F36-11943003948F",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P4": [
+        {
+          "id": "Q6$C6C35B9E-D72E-4EAF-94AF-7AAD76BF2B67",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q4",
+                "numeric-id": 4
+              }
+            },
+            "hash": "913a9c8ef703d71045b50b3d617f3f60d23de58b",
+            "property": "P4",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "A single act of development finance \u2014 the thing purpose, participant and amount statements are made about."
+      }
+    },
+    "id": "Q6",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "financing activity"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {},
+    "claims": {
+      "P1": [
+        {
+          "id": "Q7$9FF680C8-93F6-4208-85F2-9D1169A3AF6B",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "FinancingPurposeEnum"
+            },
+            "hash": "ca0e1203a46ef3833d2edf70df3d90a22e02fe60",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q7$9449BC01-AB6D-4317-80C2-E797825CB3B4",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P4": [
+        {
+          "id": "Q7$85E63F0F-3C36-4175-958D-EB29EE9CEEFA",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q3",
+                "numeric-id": 3
+              }
+            },
+            "hash": "168531e1287a73d7b786ae358d5bd59797eaff84",
+            "property": "P4",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The purpose a financing activity serves. Root of the purpose value lists; narrower lists sit under it."
+      }
+    },
+    "id": "Q7",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "financing purpose"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {},
+    "claims": {
+      "P1": [
+        {
+          "id": "Q8$184F2542-CCC3-43AE-8B48-614B8249A4DD",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "CRSPurposeEnum"
+            },
+            "hash": "7e6ee960af2dc8186e79fd8ec4eee825003f1ce6",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q8$98502887-9D82-4B54-BB4E-0F0D4CE242B1",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q1",
+                "numeric-id": 1
+              }
+            },
+            "hash": "28bda20b80e8b79b6fb829d2f5801282edf0d2af",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P4": [
+        {
+          "id": "Q8$FD324057-462C-4BF1-970A-B4E9785EEC2D",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q7",
+                "numeric-id": 7
+              }
+            },
+            "hash": "b2f3ddaa8d67c2120b336497efec1281a8878c22",
+            "property": "P4",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "Purpose as coded by the OECD DAC Creditor Reporting System. Narrows financing purpose."
+      }
+    },
+    "id": "Q8",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "CRS purpose"
+      }
+    },
+    "type": "item"
+  },
+  {
+    "aliases": {
+      "en": [
+        {
+          "language": "en",
+          "value": "120"
+        }
+      ]
+    },
+    "claims": {
+      "P1": [
+        {
+          "id": "Q9$BD49D982-9F18-4C31-9C14-E71372697908",
+          "mainsnak": {
+            "datatype": "string",
+            "datavalue": {
+              "type": "string",
+              "value": "CRSPurposeHealth"
+            },
+            "hash": "d2ab364efcda331b8fbd0bf0be17856ca4f213e5",
+            "property": "P1",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ],
+      "P3": [
+        {
+          "id": "Q9$B91B8400-4BD1-44DB-AE3C-11750C04EF3A",
+          "mainsnak": {
+            "datatype": "wikibase-item",
+            "datavalue": {
+              "type": "wikibase-entityid",
+              "value": {
+                "entity-type": "item",
+                "id": "Q8",
+                "numeric-id": 8
+              }
+            },
+            "hash": "1191604a909e597ffe255582fb834ebc44b56465",
+            "property": "P3",
+            "snaktype": "value"
+          },
+          "rank": "normal",
+          "type": "statement"
+        }
+      ]
+    },
+    "descriptions": {
+      "en": {
+        "language": "en",
+        "value": "The health sector as a whole, including basic health."
+      }
+    },
+    "id": "Q9",
+    "labels": {
+      "en": {
+        "language": "en",
+        "value": "health (CRS purpose)"
+      }
+    },
+    "type": "item"
+  }
+]
