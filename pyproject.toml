@@ -1,0 +1,139 @@
+[project]
+name = "dfo_ontology"
+version = "0.1.0"
+description = "Ontology for the Development Finance Observatory built for Data Commons"
+
+authors = [
+  { name = "Luca Picci", email = "luca.picci@one.org" }
+]
+
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28",
+]
+
+[project.scripts]
+dfo-ontology = "dfo_ontology.cli:main"
+
+
+[build-system]
+requires = ["uv_build>=0.11.29,<0.12"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+
+    "pytest>=9.1.0",
+    "pytest-cov>=7.1.0",
+
+    "ty>=0.0.59",
+    "ruff>=0.15.0",
+    "pre-commit>=4.6.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+extend-include = ["*.ipynb"]
+
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".pytest_cache",
+    "htmlcov",
+]
+
+[tool.ruff.lint]
+
+select = [
+    "E", "W", "F",      # pycodestyle, pyflakes
+    "I",                 # isort
+    "UP",                # pyupgrade
+    "B",                 # bugbear
+    "C4",                # comprehensions
+    "RUF",               # ruff-specific
+]
+
+ignore = [
+    "E501",     # Line length (formatter handles)
+    "F841",     # Unused local — common during exploration
+]
+
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+
+# Notebooks: exploration style — allow REPL-like patterns.
+"**/*.ipynb" = ["F401", "F811", "E402"]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.ty.src]
+include = ["src/dfo_ontology"]
+
+
+[tool.ty.analysis]
+# Replace pandas / numpy type information with `Any`. Eliminates the cascade
+# of false positives from those libraries' incomplete or absent stubs without
+# disabling type checking on your own code.
+# https://docs.astral.sh/ty/reference/configuration/
+replace-imports-with-any = [
+    "pandas",
+    "pandas.**",
+    "numpy",
+    "numpy.**",
+]
+
+[tool.ty.rules]
+# These warn-by-default rules fire frequently on dynamic dataframe / dict
+# patterns common in exploratory code. Demoted to ignore.
+possibly-missing-attribute = "ignore"
+possibly-unresolved-reference = "ignore"
+
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=src/dfo_ontology --cov-report=term --cov-report=xml"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+precision = 2

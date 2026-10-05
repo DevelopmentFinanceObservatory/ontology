@@ -1,0 +1,14 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v1.0.3
+_src_path: gh:ONEcampaign/bblocks-projects
+author_email: luca.picci@one.org
+author_name: Luca Picci
+include_notebooks: false
+include_pytest: true
+license: mit
+project_description: Ontology for the Development Finance Observatory built for Data
+    Commons
+project_name: Development Finance Ontology
+project_slug: dfo_ontology
+project_type: project
+python_version: '3.13'
