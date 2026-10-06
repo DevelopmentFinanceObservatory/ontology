@@ -58,6 +58,19 @@ def test_s1_reference_may_carry_codes() -> None:
     assert errors(result, "S1") == []
 
 
+def test_s1_reference_may_carry_the_imf_economy_code() -> None:
+    """A country, a reference, may state the IMF's code for it."""
+    imf = entity("P21", kind=Kind.PROPERTY, id="imfEconomyCode")
+    country = entity("Q20", dcid="dcid:Country", claims={"P3": [ref("Q1")]})
+    ken = entity(
+        "Q21",
+        dcid="dcid:country/KEN",
+        claims={"P3": [ref("Q20")], "P21": [lit("KEN")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), imf, country, ken))
+    assert errors(result, "S1") == []
+
+
 def test_s1_reference_disallowed_predicate() -> None:
     """A reference carrying subClassOf, which S1 does not allow, is S1."""
     e = entity("Q10", dcid="schema:Foo", claims={"P4": [ref("Q4")]})
@@ -488,6 +501,40 @@ def test_s6_m49_code_at_most_once() -> None:
     )
     result = validate.validate(graph(*bench_vocab(), m49, a_class, e))
     assert any(f.predicate == "m49Code" for f in errors(result, "S6"))
+
+
+def test_s6_carries_the_imf_economy_code() -> None:
+    """An individual may state its IMF economy code."""
+    imf = entity("P21", kind=Kind.PROPERTY, id="imfEconomyCode")
+    a_class = entity(
+        "Q11", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
+    )
+    e = entity(
+        "Q10",
+        id="IMFSubSaharanAfrica",
+        label="Sub-Saharan Africa (IMF)",
+        description="d",
+        claims={"P3": [ref("Q11")], "P21": [lit("G603")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), imf, a_class, e))
+    assert errors(result, "S6") == []
+
+
+def test_s6_imf_economy_code_at_most_once() -> None:
+    """The IMF assigns one code per economy or group of economies."""
+    imf = entity("P21", kind=Kind.PROPERTY, id="imfEconomyCode")
+    a_class = entity(
+        "Q11", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
+    )
+    e = entity(
+        "Q10",
+        id="IMFSubSaharanAfrica",
+        label="Sub-Saharan Africa (IMF)",
+        description="d",
+        claims={"P3": [ref("Q11")], "P21": [lit("G603"), lit("G001")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), imf, a_class, e))
+    assert any(f.predicate == "imfEconomyCode" for f in errors(result, "S6"))
 
 
 def test_m49_code_is_not_allowed_on_a_value() -> None:
