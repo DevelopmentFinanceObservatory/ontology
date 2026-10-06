@@ -169,6 +169,24 @@ def test_m49_code_reaches_codes_csv() -> None:
     )
 
 
+def test_imf_economy_code_reaches_codes_csv() -> None:
+    """An IMF group's code renders a row, naming the scheme class it sits in."""
+    imf = entity("P44", kind=Kind.PROPERTY, id="imfEconomyCode")
+    grouping = entity(
+        "Q95",
+        id="IMFSubSaharanAfrica",
+        label="Sub-Saharan Africa (IMF)",
+        description="d",
+        claims={"P3": [ref("Q93")], "P44": [lit("G603")]},
+    )
+    g = graph(*bench_vocab(), imf, _org_class("IMFRegion"), grouping)
+    assert codes.render(g) == (
+        "list,code,dcid,label,property\n"
+        "dcid:IMFRegion,G603,dcid:IMFSubSaharanAfrica,Sub-Saharan Africa (IMF),"
+        "imfEconomyCode\n"
+    )
+
+
 def test_a_currency_renders_a_row_per_register_it_belongs_to() -> None:
     """Codes from two registers on one entity render a row each, one dcid.
 

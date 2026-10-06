@@ -20,6 +20,7 @@ BATCH_SIZE = 50  # wbgetentities ids per call
 PAGE_LIMIT = 500  # allpages aplimit
 CLASSIFICATION_CODE_ID = "classificationCode"
 DAC_CODE_ID = "dacCode"
+IMF_ECONOMY_CODE_ID = "imfEconomyCode"
 ISO_ALPHA_CODE_ID = "iso4217AlphaCode"
 M49_CODE_ID = "m49Code"
 WB_CODE_ID = "wbCode"
@@ -32,6 +33,7 @@ WB_ECONOMY_CODE_ID = "wbEconomyCode"
 CODE_PROPERTY_IDS = (
     CLASSIFICATION_CODE_ID,
     DAC_CODE_ID,
+    IMF_ECONOMY_CODE_ID,
     ISO_ALPHA_CODE_ID,
     M49_CODE_ID,
     WB_CODE_ID,

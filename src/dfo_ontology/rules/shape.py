@@ -22,6 +22,7 @@ ALLOWED: dict[Shape, dict[str, tuple[int, int | None]]] = {
     Shape.REFERENCE: {
         "typeOf": (0, 1),
         "dacCode": (0, None),
+        "imfEconomyCode": (0, 1),
         "wbCounterpartCode": (0, 1),
         "wbEconomyCode": (0, 1),
     },
@@ -53,16 +54,18 @@ ALLOWED: dict[Shape, dict[str, tuple[int, int | None]]] = {
     # uncapped where an ISO code, assigned one per currency, is not. The two
     # World Bank lists name each entity once: the economy list holds one code
     # per economy, the counterpart list one per creditor. M49 likewise assigns
-    # one code per country, area or region. hasMember is uncapped and sits here
-    # alone, not on the value shape: a grouping lists its members, an
-    # enumeration value has none. nationalCurrencyOf is uncapped because several
-    # places share one national currency. G10 keeps it to a current currency,
-    # and G11 to one currency per place.
+    # one code per country, area or region, and the IMF one per economy or group
+    # of economies. hasMember is uncapped and sits here alone, not on the value
+    # shape: a grouping lists its members, an enumeration value has none.
+    # nationalCurrencyOf is uncapped because several places share one national
+    # currency. G10 keeps it to a current currency, and G11 to one currency per
+    # place.
     Shape.INDIVIDUAL: {
         "typeOf": (1, 1),
         "nationalCurrencyOf": (0, None),
         "dacCode": (0, None),
         "hasMember": (0, None),
+        "imfEconomyCode": (0, 1),
         "iso4217AlphaCode": (0, 1),
         "iso4217NumericCode": (0, 1),
         "currencyStatus": (0, 1),
