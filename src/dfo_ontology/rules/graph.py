@@ -1,4 +1,4 @@
-"""G1-G11 and A2: whole-graph consistency checks.
+"""G1-G11 and A2-A4: whole-graph consistency checks.
 
 `G1` is the only rule allowed to look at `Graph.dangling()`. Every other rule
 walks `Graph.resolved()`, which yields resolvable targets only, so a dangling
@@ -13,6 +13,7 @@ from dfo_ontology.model import (
     Kind,
     Literal,
     Result,
+    Value,
     target_text,
 )
 from dfo_ontology.shapes import Reach, Shape
@@ -149,7 +150,9 @@ def _g5(
     Scoped to entities dispatching to the class-or-list shape, so the four
     reference items — which carry a local `typeOf` and no `subClassOf` but no
     `id` — never enter `graph.defined()` and never fire. A class caught in a
-    `subClassOf` cycle is skipped: G8 already reports the cycle.
+    `subClassOf` cycle is skipped: G8 already reports the cycle. A chain that
+    stops at any other reference passes, since that node's own parents belong
+    to Data Commons.
     """
     if "G5" in blocked:
         return
@@ -162,15 +165,7 @@ def _g5(
         ):
             continue
         outcome = shapes.reach(graph, entity)
-        if outcome is Reach.BLIND:
-            result.skips.append(
-                Finding(
-                    "G5",
-                    entity=entity,
-                    message="subClassOf chain dead-ends at a reference",
-                )
-            )
-        elif outcome is Reach.BOTH:
+        if outcome is Reach.BOTH:
             result.errors.append(
                 Finding(
                     "G5",
@@ -373,47 +368,173 @@ def _g11(graph: Graph, result: Result, *, blocked: frozenset[str]) -> None:
 
 
 def _a2(graph: Graph, result: Result, *, blocked: frozenset[str]) -> None:
-    """A2: an orphan — no DFO-defined entity references it, and it references none.
+    """A2: an orphan — a defined class or value list no other defined entity points at.
 
-    Scoped to DFO-defined entities on both ends; a reference item's own
-    statements are never in scope (S1 bars it from carrying anything but an
-    optional `typeOf`), so only defined-to-defined edges count.
+    Individuals, values and properties are out of scope: what points at them is
+    the pipeline data, which the compiler never reads. Edges from a reference don't
+    count, since a reference emits nothing.
     """
     if "A2" in blocked:
         return
     defined = graph.defined()
-    defined_qids = {e.qid for e in defined if e.qid is not None}
-    referenced: set[str] = set()
-    has_outbound: dict[str, bool] = {}
+    referenced: set[str | None] = set()
 
     for entity in defined:
-        qid = entity.qid or ""
         predicates = {statement.predicate for statement in graph.statements(entity)}
-        outbound = False
         for predicate in predicates:
             for _, target in graph.resolved(entity, predicate):
-                if target.qid in defined_qids and target.qid != qid:
-                    outbound = True
-                    if target.qid is not None:
-                        referenced.add(target.qid)
-        has_outbound[qid] = outbound
+                if target is not entity:
+                    referenced.add(target.qid)
 
     for entity in defined:
-        qid = entity.qid or ""
-        if qid not in referenced and not has_outbound[qid]:
+        if shapes.is_class(graph, entity) is True and entity.qid not in referenced:
             result.advisories.append(
                 Finding(
                     "A2",
                     entity=entity,
-                    message="orphan — nothing references it and it references nothing",
+                    message="orphan — nothing on the bench points at it",
                 )
             )
+
+
+def _node_class(graph: Graph, entity: Entity) -> Entity | None:
+    """The class a node is an instance of: Property for a minted property, else its typeOf."""
+    if shapes.is_minted_property(entity):
+        return shapes.well_known(graph, shapes.PROPERTY)
+    return shapes.type_target(graph, entity)
+
+
+def _minted_on(graph: Graph, entity: Entity) -> list[Entity]:
+    """The minted properties this entity's statements are made through, by id."""
+    found = {
+        statement.property: prop
+        for statement in graph.statements(entity)
+        if (prop := graph.entity(statement.property)) is not None
+        and shapes.is_minted_property(prop)
+    }
+    return sorted(found.values(), key=lambda prop: prop.id or "")
+
+
+def _listed(graph: Graph, targets: list[Entity]) -> str:
+    """A domain or range as message text, sorted."""
+    return ", ".join(sorted(_target_text(graph, target) for target in targets))
+
+
+def _a3(graph: Graph, result: Result, *, blocked: frozenset[str]) -> None:
+    """A3: a statement through a minted property sits on a node its domain covers.
+
+    One finding per node and property, however often it is stated. A node with
+    no single class is S7's to report, except a reference, whose typeOf is
+    optional, so that is a skip.
+    """
+    if "A3" in blocked:
+        return
+    for entity in graph.entities.values():
+        for prop in _minted_on(graph, entity):
+            domain = [target for _, target in graph.resolved(prop, "domainIncludes")]
+            if not domain:
+                continue  # S2 reports a property with no domain
+            node_class = _node_class(graph, entity)
+            if node_class is None:
+                if entity.dcid is not None:
+                    result.skips.append(
+                        Finding(
+                            "A3",
+                            entity=entity,
+                            predicate=prop.id,
+                            message="carries no typeOf to check against the domain",
+                        )
+                    )
+                continue
+            if shapes.within(graph, node_class, domain):
+                continue
+            node_text = _target_text(graph, node_class)
+            result.advisories.append(
+                Finding(
+                    "A3",
+                    entity=entity,
+                    predicate=prop.id,
+                    value=node_text,
+                    message=f"{prop.id}'s domain does not cover {node_text}: "
+                    f"it lists {_listed(graph, domain)}",
+                )
+            )
+
+
+def _a4(graph: Graph, result: Result, *, blocked: frozenset[str]) -> None:
+    """A4: a value stated through a minted property is one its range covers.
+
+    Text needs a data type in the range; an entity needs its class to be, or
+    sit under, a class the range lists. One finding per node, property and
+    value text. A dangling value is G1's and a value with no single class is
+    S7's, except a reference, whose typeOf is optional, so that is a skip.
+    """
+    if "A4" in blocked:
+        return
+    for entity in graph.entities.values():
+        reported: set[tuple[str, str]] = set()
+        for statement in graph.statements(entity):
+            prop = graph.entity(statement.property)
+            if prop is None or not shapes.is_minted_property(prop):
+                continue
+            range_ = [target for _, target in graph.resolved(prop, "rangeIncludes")]
+            if not range_:
+                continue  # S2 reports a property with no range
+            outcome = _a4_finding(graph, entity, prop, statement.value, range_)
+            if outcome is None:
+                continue
+            finding, skipped = outcome
+            key = (prop.id or "", finding.value or "")
+            if key in reported:
+                continue
+            reported.add(key)
+            (result.skips if skipped else result.advisories).append(finding)
+
+
+def _a4_finding(
+    graph: Graph, entity: Entity, prop: Entity, value: Value, range_: list[Entity]
+) -> tuple[Finding, bool] | None:
+    """A4's finding for one value and whether it is a skip, or None when nothing to say."""
+    if isinstance(value, Literal):
+        if any(shapes.is_datatype(graph, target) for target in range_):
+            return None
+        value_text = "text"
+    else:
+        target = graph.entity(value.qid)
+        if target is None:
+            return None  # G1 reports the dangling value
+        target_class = _node_class(graph, target)
+        if target_class is None:
+            if target.dcid is None:
+                return None
+            skip = Finding(
+                "A4",
+                entity=entity,
+                predicate=prop.id,
+                value=_target_text(graph, target),
+                message="target carries no typeOf to check against the range",
+            )
+            return skip, True
+        if shapes.within(graph, target_class, range_):
+            return None
+        value_text = (
+            f"{_target_text(graph, target)}, typed {_target_text(graph, target_class)}"
+        )
+    advisory = Finding(
+        "A4",
+        entity=entity,
+        predicate=prop.id,
+        value=value_text,
+        message=f"{prop.id}'s range does not cover {value_text}: "
+        f"it lists {_listed(graph, range_)}",
+    )
+    return advisory, False
 
 
 def graph_layer(
     graph: Graph, result: Result, *, blocked: frozenset[str], cyclic: frozenset[str]
 ) -> None:
-    """G1-G11 and A2: whole-graph consistency checks.
+    """G1-G11 and A2-A4: whole-graph consistency checks.
 
     Each rule is guarded on its own id, not the layer as a whole, matching the
     identity and shape layers.
@@ -440,3 +561,5 @@ def graph_layer(
     _g10(graph, result, blocked=blocked)
     _g11(graph, result, blocked=blocked)
     _a2(graph, result, blocked=blocked)
+    _a3(graph, result, blocked=blocked)
+    _a4(graph, result, blocked=blocked)
