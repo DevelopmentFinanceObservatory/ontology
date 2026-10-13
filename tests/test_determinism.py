@@ -77,7 +77,7 @@ import sys
 from dfo_ontology import codes, emit, reader, report, validate
 from dfo_ontology.config import Config
 
-config = Config(bench="testing")
+config = Config(bench="dev")
 payloads = json.loads(sys.stdin.read())
 graph = reader.read(payloads, config=config)
 result = validate.validate(graph)

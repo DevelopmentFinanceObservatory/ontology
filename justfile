@@ -10,6 +10,6 @@ fmt:
     uv run ruff check --fix .
     uv run ruff format .
 
-# Compile the bench to MCF.
-compile:
-    uv run dfo-ontology compile
+# Compile a bench to MCF, e.g. `just compile prod` or `just compile dev --check`.
+compile bench *flags:
+    uv run dfo-ontology compile --bench {{bench}} {{flags}}

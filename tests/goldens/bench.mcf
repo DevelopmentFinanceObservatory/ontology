@@ -1,4 +1,4 @@
-# bench: testing (https://dfo-testing-2.wikibase.cloud)
+# bench: dev (https://dfo-dev.wikibase.cloud)
 
 Node: dcid:AFD
 typeOf: schema:Organization

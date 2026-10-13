@@ -7,7 +7,6 @@ from dataclasses import dataclass
 # the endpoint, so the two can't drift.
 BENCHES = {
     "prod": "https://developmentfinance.wikibase.cloud",
-    "testing": "https://dfo-testing-2.wikibase.cloud",
     "dev": "https://dfo-dev.wikibase.cloud",
 }
 API_PATH = "/w/api.php"

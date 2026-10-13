@@ -6,8 +6,8 @@ from dfo_ontology.model import Finding, Kind, Result
 
 from .graphbuild import bench_vocab, entity, graph, lit, ref
 
-CONFIG = Config(bench="testing")
-PREAMBLE = "bench: testing (https://dfo-testing-2.wikibase.cloud)\n\n"
+CONFIG = Config(bench="dev")
+PREAMBLE = "bench: dev (https://dfo-dev.wikibase.cloud)\n\n"
 
 # --- Header ------------------------------------------------------------
 

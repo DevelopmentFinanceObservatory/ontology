@@ -32,7 +32,7 @@ CLEAN_GRAPH = graph(
     ),
 )
 FAILING_GRAPH = graph(*bench_vocab(), entity("Q10", id="1bad", label="bad"))
-TESTING = Config(bench="testing")
+DEV = Config(bench="dev")
 
 # CLEAN_GRAPH plus a provisional subclass of SomeClass: the provisional node
 # points at a settled one, never the other way, so excluding it passes E1.
@@ -86,10 +86,10 @@ def test_compile_writes_mcf_and_report_on_success(tmp_path, monkeypatch) -> None
     monkeypatch.setattr(cli, "load_graph", lambda config: CLEAN_GRAPH)
     output = tmp_path / "output" / "dfo.mcf"
 
-    exit_code = cli.main(["compile", "--bench", "testing", "-o", str(output)])
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output)])
 
     assert exit_code == 0
-    assert output.read_text() == emit.emit(CLEAN_GRAPH, config=TESTING)
+    assert output.read_text() == emit.emit(CLEAN_GRAPH, config=DEV)
     assert (output.parent / "report.txt").exists()
 
 
@@ -98,9 +98,7 @@ def test_check_writes_report_but_not_mcf(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(cli, "load_graph", lambda config: CLEAN_GRAPH)
     output = tmp_path / "output" / "dfo.mcf"
 
-    exit_code = cli.main(
-        ["compile", "--bench", "testing", "-o", str(output), "--check"]
-    )
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output), "--check"])
 
     assert exit_code == 0
     assert not output.exists()
@@ -112,7 +110,7 @@ def test_failing_graph_reports_and_exits_1(tmp_path, monkeypatch, capsys) -> Non
     monkeypatch.setattr(cli, "load_graph", lambda config: FAILING_GRAPH)
     output = tmp_path / "output" / "dfo.mcf"
 
-    exit_code = cli.main(["compile", "--bench", "testing", "-o", str(output)])
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output)])
 
     assert exit_code == 1
     assert not output.exists()
@@ -126,12 +124,12 @@ def test_failing_run_removes_an_mcf_left_by_an_earlier_run(
     """The MCF from a passing run does not survive a later failing one."""
     output = tmp_path / "output" / "dfo.mcf"
     monkeypatch.setattr(cli, "load_graph", lambda config: CLEAN_GRAPH)
-    assert cli.main(["compile", "--bench", "testing", "-o", str(output)]) == 0
+    assert cli.main(["compile", "--bench", "dev", "-o", str(output)]) == 0
     assert output.exists()
 
     monkeypatch.setattr(cli, "load_graph", lambda config: FAILING_GRAPH)
 
-    assert cli.main(["compile", "--bench", "testing", "-o", str(output)]) == 1
+    assert cli.main(["compile", "--bench", "dev", "-o", str(output)]) == 1
     assert not output.exists()
 
 
@@ -140,7 +138,7 @@ def test_output_flag_places_all_artifacts_alongside(tmp_path, monkeypatch) -> No
     monkeypatch.setattr(cli, "load_graph", lambda config: CLEAN_GRAPH)
     output = tmp_path / "other" / "place.mcf"
 
-    exit_code = cli.main(["compile", "--bench", "testing", "-o", str(output)])
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output)])
 
     assert exit_code == 0
     assert output.exists()
@@ -153,7 +151,7 @@ def test_compile_writes_codes_csv_on_success(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(cli, "load_graph", lambda config: CODED_GRAPH)
     output = tmp_path / "output" / "dfo.mcf"
 
-    exit_code = cli.main(["compile", "--bench", "testing", "-o", str(output)])
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output)])
 
     assert exit_code == 0
     written = (output.parent / "codes.csv").read_text(encoding="utf-8")
@@ -166,9 +164,7 @@ def test_check_does_not_write_codes_csv(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(cli, "load_graph", lambda config: CODED_GRAPH)
     output = tmp_path / "output" / "dfo.mcf"
 
-    exit_code = cli.main(
-        ["compile", "--bench", "testing", "-o", str(output), "--check"]
-    )
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output), "--check"])
 
     assert exit_code == 0
     assert not (output.parent / "codes.csv").exists()
@@ -180,12 +176,12 @@ def test_failing_run_removes_codes_csv_left_by_an_earlier_run(
     """The codes.csv from a passing run does not survive a later failing one."""
     output = tmp_path / "output" / "dfo.mcf"
     monkeypatch.setattr(cli, "load_graph", lambda config: CODED_GRAPH)
-    assert cli.main(["compile", "--bench", "testing", "-o", str(output)]) == 0
+    assert cli.main(["compile", "--bench", "dev", "-o", str(output)]) == 0
     assert (output.parent / "codes.csv").exists()
 
     monkeypatch.setattr(cli, "load_graph", lambda config: FAILING_GRAPH)
 
-    assert cli.main(["compile", "--bench", "testing", "-o", str(output)]) == 1
+    assert cli.main(["compile", "--bench", "dev", "-o", str(output)]) == 1
     assert not (output.parent / "codes.csv").exists()
 
 
@@ -197,7 +193,7 @@ def test_bench_error_exits_2(monkeypatch, capsys) -> None:
 
     monkeypatch.setattr(cli, "load_graph", raise_bench_error)
 
-    exit_code = cli.main(["compile", "--bench", "testing"])
+    exit_code = cli.main(["compile", "--bench", "dev"])
 
     assert exit_code == 2
     err_lines = capsys.readouterr().err.splitlines()
@@ -211,7 +207,7 @@ def test_oserror_on_write_exits_2(tmp_path, monkeypatch) -> None:
     blocked.write_text("not a directory")
     output = blocked / "dfo.mcf"
 
-    exit_code = cli.main(["compile", "--bench", "testing", "-o", str(output)])
+    exit_code = cli.main(["compile", "--bench", "dev", "-o", str(output)])
 
     assert exit_code == 2
 
@@ -243,7 +239,7 @@ def test_unknown_bench_is_a_usage_error(capsys) -> None:
 
     assert exit_info.value.code == 2
     err = capsys.readouterr().err
-    assert "prod" in err and "testing" in err
+    assert "prod" in err and "dev" in err
 
 
 def test_bench_reaches_load_graph_and_both_artifacts(tmp_path, monkeypatch) -> None:
@@ -267,7 +263,6 @@ def test_bench_reaches_load_graph_and_both_artifacts(tmp_path, monkeypatch) -> N
 def test_each_bench_gets_its_own_default_output_directory(monkeypatch) -> None:
     """Compiling one bench cannot overwrite another's MCF."""
     assert cli.default_output("prod") == Path("output/prod/dfo.mcf")
-    assert cli.default_output("testing") == Path("output/testing/dfo.mcf")
     assert cli.default_output("dev") == Path("output/dev/dfo.mcf")
 
 
@@ -276,10 +271,10 @@ def test_default_output_is_used_when_no_output_flag(tmp_path, monkeypatch) -> No
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(cli, "load_graph", lambda config: CLEAN_GRAPH)
 
-    assert cli.main(["compile", "--bench", "testing"]) == 0
+    assert cli.main(["compile", "--bench", "dev"]) == 0
 
-    assert (tmp_path / "output" / "testing" / "dfo.mcf").exists()
-    assert (tmp_path / "output" / "testing" / "report.txt").exists()
+    assert (tmp_path / "output" / "dev" / "dfo.mcf").exists()
+    assert (tmp_path / "output" / "dev" / "report.txt").exists()
 
 
 def test_provisional_nodes_are_emitted_by_default(tmp_path, monkeypatch) -> None:
@@ -287,7 +282,7 @@ def test_provisional_nodes_are_emitted_by_default(tmp_path, monkeypatch) -> None
     monkeypatch.setattr(cli, "load_graph", lambda config: PROVISIONAL_GRAPH)
     output = tmp_path / "dfo.mcf"
 
-    assert cli.main(["compile", "--bench", "testing", "-o", str(output)]) == 0
+    assert cli.main(["compile", "--bench", "dev", "-o", str(output)]) == 0
     assert "Node: dcid:DraftClass\n" in output.read_text()
     report_text = (tmp_path / "report.txt").read_text()
     assert "Provisional (1), included in the MCF and codes.csv" in report_text
@@ -298,7 +293,7 @@ def test_exclude_provisional_leaves_them_out(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(cli, "load_graph", lambda config: PROVISIONAL_GRAPH)
     output = tmp_path / "dfo.mcf"
 
-    argv = ["compile", "--bench", "testing", "-o", str(output), "--exclude-provisional"]
+    argv = ["compile", "--bench", "dev", "-o", str(output), "--exclude-provisional"]
     assert cli.main(argv) == 0
     mcf = output.read_text()
     assert "Node: dcid:DraftClass\n" not in mcf
@@ -323,7 +318,7 @@ def test_exclude_provisional_fails_when_a_settled_node_depends_on_one(
     monkeypatch.setattr(cli, "load_graph", lambda config: g)
     output = tmp_path / "dfo.mcf"
 
-    argv = ["compile", "--bench", "testing", "-o", str(output), "--exclude-provisional"]
+    argv = ["compile", "--bench", "dev", "-o", str(output), "--exclude-provisional"]
     assert cli.main(argv) == 1
     assert not output.exists()
     assert "E1" in (tmp_path / "report.txt").read_text()
