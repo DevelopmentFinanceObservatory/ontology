@@ -1,31 +1,24 @@
-"""S1-S7: the shape allowlist, an ordered dispatch checked against a per-shape allowlist.
+"""S1-S7: an ordered dispatch, each shape checked against what it may carry.
 
 `id` and `dcid` statements never reach this layer — `Graph.statements()` already
-excludes them, structurally, for every shape. A predicate outside the matched
-shape's list is rejected everywhere until a shape opts into it (§9.1 of the brief).
+excludes them, structurally, for every shape. Each shape lists the structural
+statements it may carry. A property the DFO mints may sit on any node the DFO
+emits, and where it belongs is A3's and A4's question; a reference emits no
+node, so it carries only codes.
 """
 
 from dfo_ontology import config, shapes
 from dfo_ontology.model import Entity, Finding, Graph, Result
 from dfo_ontology.shapes import Shape
 
+type Counts = dict[str, tuple[int, int | None]]
+
 # Any node the DFO emits may be flagged once as not yet final. A reference emits
 # nothing, so it has nothing to flag.
-PROVISIONAL: dict[str, tuple[int, int | None]] = {"isProvisional": (0, 1)}
+PROVISIONAL: Counts = {"isProvisional": (0, 1)}
 
-ALLOWED: dict[Shape, dict[str, tuple[int, int | None]]] = {
-    # A reference emits no node, so a code on one reaches nobody through the
-    # MCF. It reaches them through codes.csv: stating that DAC 625 is
-    # country/AFG is how a pipeline resolves a source code to a global node
-    # the DFO does not own. Cardinalities match the individual shape, since a
-    # reference is an individual that happens to live outside the DFO.
-    Shape.REFERENCE: {
-        "typeOf": (0, 1),
-        "dacCode": (0, None),
-        "imfEconomyCode": (0, 1),
-        "wbCounterpartCode": (0, 1),
-        "wbEconomyCode": (0, 1),
-    },
+ALLOWED: dict[Shape, Counts] = {
+    Shape.REFERENCE: {"typeOf": (0, 1)},
     Shape.MINTED_PROPERTY: {
         "domainIncludes": (1, None),
         "rangeIncludes": (1, None),
@@ -40,45 +33,34 @@ ALLOWED: dict[Shape, dict[str, tuple[int, int | None]]] = {
         **PROVISIONAL,
     },
     Shape.CLASS_OR_LIST: {"typeOf": (1, 1), "subClassOf": (0, None), **PROVISIONAL},
-    # A value's own code identifies it, so classificationCode is capped at one;
-    # a wbCode records the same concept's code in a World Bank list, and one
-    # concept can sit in more than one of those.
-    Shape.VALUE: {
-        "typeOf": (1, 1),
-        "specializationOf": (0, 1),
-        "classificationCode": (0, 1),
-        "wbCode": (0, None),
-        **PROVISIONAL,
-    },
-    # A register can reach one thing through more than one code, so dacCode is
-    # uncapped where an ISO code, assigned one per currency, is not. The two
-    # World Bank lists name each entity once: the economy list holds one code
-    # per economy, the counterpart list one per creditor. M49 likewise assigns
-    # one code per country, area or region, and the IMF one per economy or group
-    # of economies. hasMember is uncapped and sits here alone, not on the value
-    # shape: a grouping lists its members, an enumeration value has none.
-    # nationalCurrencyOf is uncapped because several places share one national
-    # currency. G10 keeps it to a current currency, and G11 to one currency per
-    # place.
-    Shape.INDIVIDUAL: {
-        "typeOf": (1, 1),
-        "nationalCurrencyOf": (0, None),
-        "dacCode": (0, None),
-        "hasMember": (0, None),
-        "imfEconomyCode": (0, 1),
-        "iso4217AlphaCode": (0, 1),
-        "iso4217NumericCode": (0, 1),
-        "currencyStatus": (0, 1),
-        "m49Code": (0, 1),
-        "wbCounterpartCode": (0, 1),
-        "wbEconomyCode": (0, 1),
-        **PROVISIONAL,
-    },
+    Shape.VALUE: {"typeOf": (1, 1), "specializationOf": (0, 1), **PROVISIONAL},
+    Shape.INDIVIDUAL: {"typeOf": (1, 1), **PROVISIONAL},
 }
 ALLOWED[Shape.VALUE_OR_INDIVIDUAL] = {
     **ALLOWED[Shape.VALUE],
     **ALLOWED[Shape.INDIVIDUAL],
 }
+
+# Minted properties a node states at most once. Each register here assigns one
+# code per thing: ISO one per currency, M49 one per country, area or region, the
+# IMF one per economy or group of economies, and the World Bank's economy and
+# counterpart lists one per economy and per creditor. A value's own code
+# identifies it, and a currency has one status. Any other minted property may
+# repeat: DAC reaches one thing through several codes, a concept can sit in more
+# than one World Bank list, a grouping lists every member, and several places
+# share one national currency.
+SINGLE_VALUED = frozenset(
+    {
+        "classificationCode",
+        "currencyStatus",
+        "imfEconomyCode",
+        "iso4217AlphaCode",
+        "iso4217NumericCode",
+        "m49Code",
+        "wbCounterpartCode",
+        "wbEconomyCode",
+    }
+)
 
 SHAPE_LABELS: dict[Shape, str] = {
     Shape.REFERENCE: "a reference",
@@ -91,19 +73,36 @@ SHAPE_LABELS: dict[Shape, str] = {
 }
 
 
-def _allowed_for(graph: Graph, shape: Shape) -> dict[str, tuple[int, int | None]]:
-    """This shape's allowlist, dropping code properties not minted on the bench."""
-    allowed = dict(ALLOWED[shape])
-    for property_id in config.CODE_PROPERTY_IDS:
-        if property_id in allowed and graph.entity_by_id(property_id) is None:
-            del allowed[property_id]
-    return allowed
+def _minted_counts(graph: Graph) -> Counts:
+    """Every property the DFO mints on this bench, with how often a node may state it.
+
+    Args:
+        graph: the graph to search.
+    """
+    return {
+        name: (0, 1) if name in SINGLE_VALUED else (0, None)
+        for entity in graph.entities.values()
+        if shapes.is_minted_property(entity) and (name := entity.id) is not None
+    }
 
 
-def _disallowed_message(shape: Shape, predicate: str) -> str:
-    """The message for a predicate the matched shape's allowlist does not carry."""
+def _allowed_for(shape: Shape, minted: Counts) -> Counts:
+    """What this shape may carry: its structural statements, then minted properties.
+
+    A reference emits no node, so a statement on it reaches a consumer only
+    through codes.csv, which reads only the code properties.
+    """
+    if shape is Shape.REFERENCE:
+        minted = {p: c for p, c in minted.items() if p in config.CODE_PROPERTY_IDS}
+    return {**minted, **ALLOWED[shape]}
+
+
+def _disallowed_message(shape: Shape, predicate: str, minted: Counts) -> str:
+    """The message for a predicate the matched shape does not carry."""
     if shape is Shape.MINTED_PROPERTY and predicate == "typeOf":
         return "a minted working-set property carries no typeOf; schema:Property is injected"
+    if shape is Shape.REFERENCE and predicate in minted:
+        return "a reference emits no node, so it may carry only the code properties codes.csv reads"
     return f"not allowed on {SHAPE_LABELS[shape]}"
 
 
@@ -123,10 +122,10 @@ def _cardinality_message(count: int, minimum: int, maximum: int | None) -> str:
 
 
 def _check_statements(
-    graph: Graph, result: Result, entity: Entity, shape: Shape
+    graph: Graph, result: Result, entity: Entity, shape: Shape, minted: Counts
 ) -> None:
-    """Check this entity's statements against its matched shape's allowlist."""
-    allowed = _allowed_for(graph, shape)
+    """Check this entity's statements against what its matched shape may carry."""
+    allowed = _allowed_for(shape, minted)
     counts: dict[str, int] = {}
     disallowed: set[str] = set()
     for statement in graph.statements(entity):
@@ -140,7 +139,7 @@ def _check_statements(
                 shape.value,
                 entity=entity,
                 predicate=predicate,
-                message=_disallowed_message(shape, predicate),
+                message=_disallowed_message(shape, predicate, minted),
             )
         )
 
@@ -160,7 +159,7 @@ def _check_statements(
 def shape_layer(
     graph: Graph, result: Result, *, blocked: frozenset[str], cyclic: frozenset[str]
 ) -> None:
-    """S1-S7: dispatch every entity to its shape, then check it against the allowlist.
+    """S1-S7: dispatch every entity to its shape, then check what it carries.
 
     Each entity's rule is guarded on its own id, not the layer as a whole — an
     entity dispatches to exactly one shape, so the guard is which shape id that
@@ -174,6 +173,7 @@ def shape_layer(
         cyclic: qids known to be in a subClassOf or subPropertyOf cycle.
     """
     bookkeeping = {graph.id_property, graph.dcid_property}
+    minted = _minted_counts(graph)
     for entity in graph.entities.values():
         if entity.qid in bookkeeping:
             continue
@@ -191,12 +191,9 @@ def shape_layer(
         if shape is Shape.VALUE_OR_INDIVIDUAL:
             if "S5" in blocked or "S6" in blocked:
                 continue
-            _check_statements(graph, result, entity, shape)
-            result.skips.append(
-                Finding("S5|S6", entity=entity, message=dispatch.reason or "")
-            )
+            _check_statements(graph, result, entity, shape, minted)
             continue
 
         if shape.value in blocked:
             continue
-        _check_statements(graph, result, entity, shape)
+        _check_statements(graph, result, entity, shape, minted)

@@ -29,23 +29,23 @@ STRUCTURAL_PREDICATES = (
 # claiming one bare name); a predicate simply absent from the bench blocks
 # nothing, because no statement can be made through it.
 #
-# Both Class-item gaps reach G3 and G4 as well as G2: all three resolve a
-# target's typing through the one Class claimant, so with none or more than one,
-# a target typed through the wrong claimant reads as "not typed Class".
+# Both Class-item gaps reach G3, G4 and A2 as well as G2: all four resolve
+# typing through the one Class claimant, so with none or more than one, a node
+# typed through the wrong claimant reads as "not typed Class".
 BLOCKED_BY_GAP: dict[str, frozenset[str]] = {
     "id property": frozenset(
-        "I1 I2 I3 I4 I5 I7 I8 I9 I10 I11 S2 S3 S4 S5 S6 S7 G5 G9 G10 G11 A1 A2".split()
+        "I1 I2 I3 I4 I5 I7 I8 I9 I10 I11 S2 S3 S4 S5 S6 S7 G5 G9 G10 G11 A1 A2 A3 A4".split()
     ),
     "dcid property": frozenset("I1 I2 I3 I6 S1".split()),
-    f"{CLASS} item": frozenset("G2 G3 G4 S1 S4".split()),
+    f"{CLASS} item": frozenset("G2 G3 G4 S1 S4 A2".split()),
     f"{PROPERTY} item": frozenset("S3 G6".split()),
     f"{THING} item": frozenset("G5 S6".split()),
     f"{ENUMERATION} item": frozenset("G5 S5".split()),
-    "typeOf predicate": frozenset("G2 G5 S3 S4 S5 S6 S7".split()),
-    "subClassOf predicate": frozenset("G5 G8 S5 S6".split()),
+    "typeOf predicate": frozenset("G2 G5 S3 S4 S5 S6 S7 A2 A3 A4".split()),
+    "subClassOf predicate": frozenset("G5 G8 S5 S6 A3 A4".split()),
     "subPropertyOf predicate": frozenset("G6 G8".split()),
-    "domainIncludes predicate": frozenset("G3".split()),
-    "rangeIncludes predicate": frozenset("G4".split()),
+    "domainIncludes predicate": frozenset("G3 A3".split()),
+    "rangeIncludes predicate": frozenset("G4 A4".split()),
     "specializationOf predicate": frozenset("G7".split()),
 }
 

@@ -1,7 +1,7 @@
-"""Tests for rules/graph.py (G1-G11, A2)."""
+"""Tests for rules/graph.py (G1-G11, A2-A4)."""
 
 from dfo_ontology import validate
-from dfo_ontology.model import Entity, Finding, Kind
+from dfo_ontology.model import Entity, Finding, Kind, Result, Value
 
 from .graphbuild import (
     advisories,
@@ -302,8 +302,8 @@ def test_g5_reaches_neither_is_an_error() -> None:
     assert any(f.entity is dead_end and "neither" in f.message for f in g5)
 
 
-def test_g5_blind_chain_is_a_skip() -> None:
-    """A subClassOf chain dead-ending at a blind reference is a skip, not an error."""
+def test_g5_chain_stopping_at_a_reference_passes() -> None:
+    """A subClassOf chain stopping at a reference is neither an error nor a skip."""
     blind_ref = entity("Q51", dcid="schema:SomeBlindThing")
     blind_chain = entity(
         "Q52",
@@ -313,8 +313,8 @@ def test_g5_blind_chain_is_a_skip() -> None:
         claims={"P3": [ref("Q1")], "P4": [ref("Q51")]},
     )
     result = validate.validate(graph(*bench_vocab(), blind_ref, blind_chain))
-    assert not any(f.entity is blind_chain for f in errors(result, "G5"))
-    assert any(f.entity is blind_chain for f in skips(result, "G5"))
+    assert errors(result, "G5") == []
+    assert skips(result, "G5") == []
 
 
 def test_g5_does_not_fire_on_the_live_bench_reference_items() -> None:
@@ -809,7 +809,7 @@ def test_a2_referenced_entity_is_not_an_orphan() -> None:
 
 
 def test_a2_unreferenced_entity_is_an_orphan() -> None:
-    """A value list nothing references, and which references no defined entity, is A2."""
+    """A value list nothing on the bench points at is A2."""
     lonely_enum = entity(
         "Q101",
         id="LonelyEnum",
@@ -822,6 +822,298 @@ def test_a2_unreferenced_entity_is_an_orphan() -> None:
     assert any(f.entity is lonely_enum for f in advisory_findings)
     assert not any(f.rule == "A2" for f in result.errors)
     assert result.ok is True
+
+
+def test_a2_class_pointing_only_at_its_parent_is_an_orphan() -> None:
+    """A subclass nothing points at is A2, even though it points at its parent."""
+    parent = entity(
+        "Q100",
+        id="FinancingActivity",
+        label="fa",
+        description="d",
+        claims={"P3": [ref("Q1")], "P4": [ref("Q4")]},
+    )
+    child = entity(
+        "Q101",
+        id="Grant",
+        label="g",
+        description="d",
+        claims={"P3": [ref("Q1")], "P4": [ref("Q100")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), parent, child))
+    assert [f.entity for f in advisories(result, "A2")] == [child]
+
+
+def test_a2_individual_typed_to_a_reference_is_not_an_orphan() -> None:
+    """An individual whose only link is its type, a reference, is not A2."""
+    organization = entity("Q20", dcid="dcid:Organization", claims={"P3": [ref("Q1")]})
+    bank = entity(
+        "Q100",
+        id="AfricanDevelopmentBank",
+        label="afdb",
+        description="d",
+        claims={"P3": [ref("Q20")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), organization, bank))
+    assert advisories(result, "A2") == []
+
+
+def test_a2_unused_property_is_not_an_orphan() -> None:
+    """A property nothing on the bench uses is not A2; the pipeline data uses it."""
+    amount = entity(
+        "P50",
+        kind=Kind.PROPERTY,
+        id="someAmount",
+        label="a",
+        description="d",
+        claims={"P6": [ref("Q4")], "P7": [ref("Q4")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), amount))
+    assert advisories(result, "A2") == []
+
+
+def test_a2_not_run_without_the_class_item() -> None:
+    """A missing Class item blocks A2, since it tells classes apart through it."""
+    vocab = [e for e in bench_vocab() if e.qid != "Q1"]
+    result = validate.validate(graph(*vocab))
+    assert "A2" in result.not_run
+
+
+# --- A3: a node inside its property's domain ---------------------------------------
+
+
+def _domain_vocab() -> list[Entity]:
+    """dacCode (P40), text on countries and groupings; a Country reference (Q140);
+    a Grouping class (Q141) with a GeoGrouping subclass (Q142); a CurrencyUnit
+    class (Q143); a value list (Q144); and the DataType (Q145) and Text (Q146)
+    references."""
+    return [
+        entity(
+            "P40",
+            kind=Kind.PROPERTY,
+            id="dacCode",
+            label="DAC code",
+            description="d",
+            claims={"P6": [ref("Q140"), ref("Q141")], "P7": [ref("Q146")]},
+        ),
+        entity("Q140", dcid="dcid:Country", claims={"P3": [ref("Q1")]}),
+        entity(
+            "Q141",
+            id="Grouping",
+            label="g",
+            description="d",
+            claims={"P3": [ref("Q1")], "P4": [ref("Q4")]},
+        ),
+        entity(
+            "Q142",
+            id="GeoGrouping",
+            label="geo",
+            description="d",
+            claims={"P3": [ref("Q1")], "P4": [ref("Q141")]},
+        ),
+        entity(
+            "Q143",
+            id="CurrencyUnit",
+            label="c",
+            description="d",
+            claims={"P3": [ref("Q1")], "P4": [ref("Q4")]},
+        ),
+        entity(
+            "Q144",
+            id="SomeEnum",
+            label="l",
+            description="d",
+            claims={"P3": [ref("Q1")], "P4": [ref("Q3")]},
+        ),
+        entity("Q145", dcid="schema:DataType", claims={"P3": [ref("Q1")]}),
+        entity("Q146", dcid="schema:Text", claims={"P3": [ref("Q145")]}),
+    ]
+
+
+def _coded(qid: str, *, typed: str, codes: tuple[str, ...] = ("625",)) -> Entity:
+    """A defined node of this class carrying these DAC codes."""
+    return entity(
+        qid,
+        id=f"Node{qid}",
+        label=qid,
+        description="d",
+        claims={"P3": [ref(typed)], "P40": [lit(code) for code in codes]},
+    )
+
+
+def test_a3_node_typed_to_a_domain_class_passes() -> None:
+    """A country reference typed Country sits in a domain naming Country."""
+    afg = entity(
+        "Q150",
+        dcid="dcid:country/AFG",
+        claims={"P3": [ref("Q140")], "P40": [lit("625")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), afg))
+    assert advisories(result, "A3") == []
+
+
+def test_a3_node_under_a_domain_class_passes() -> None:
+    """A region typed GeoGrouping sits under Grouping, which the domain names."""
+    region = _coded("Q150", typed="Q142")
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), region))
+    assert advisories(result, "A3") == []
+
+
+def test_a3_node_outside_the_domain_is_an_advisory() -> None:
+    """A currency carrying a code whose domain names only places is A3, not an error."""
+    usd = _coded("Q150", typed="Q143", codes=("302", "765"))
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), usd))
+    a3 = advisories(result, "A3")
+    assert [(f.entity, f.predicate) for f in a3] == [(usd, "dacCode")]
+    assert a3[0].message == (
+        "dacCode's domain does not cover dcid:CurrencyUnit: "
+        "it lists dcid:Country, dcid:Grouping"
+    )
+    assert not any(f.rule == "A3" for f in result.errors)
+
+
+def test_a3_thing_does_not_cover_a_value() -> None:
+    """A value's chain reaches Enumeration, so a domain of Thing does not cover it."""
+    wb_code = entity(
+        "P41",
+        kind=Kind.PROPERTY,
+        id="wbCode",
+        label="wb",
+        description="d",
+        claims={"P6": [ref("Q4")], "P7": [ref("Q146")]},
+    )
+    value = entity(
+        "Q150",
+        id="SomeValue",
+        label="v",
+        description="d",
+        claims={"P3": [ref("Q144")], "P41": [lit("X")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), wb_code, value))
+    assert [f.entity for f in advisories(result, "A3")] == [value]
+
+
+def test_a3_reference_with_no_typeof_is_a_skip() -> None:
+    """A reference need not state typeOf, so there is nothing to place: a skip."""
+    bare_ref = entity("Q150", dcid="dcid:country/AFG", claims={"P40": [lit("625")]})
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), bare_ref))
+    assert advisories(result, "A3") == []
+    assert [(f.entity, f.predicate) for f in skips(result, "A3")] == [
+        (bare_ref, "dacCode")
+    ]
+
+
+def test_a3_not_run_without_the_domain_includes_predicate() -> None:
+    """Two properties claiming domainIncludes leave A3 nothing to read."""
+    second = entity("P60", kind=Kind.PROPERTY, dcid="dcid:domainIncludes")
+    result = validate.validate(graph(*bench_vocab(), *_domain_vocab(), second))
+    assert "A3" in result.not_run
+
+
+# --- A4: a value inside its property's range ---------------------------------------
+
+
+def _range_vocab() -> list[Entity]:
+    """hasMember (P42) on groupings, pointing at countries and groupings, and
+    m49Code (P43), whose range wrongly names Country rather than Text."""
+    return [
+        entity(
+            "P42",
+            kind=Kind.PROPERTY,
+            id="hasMember",
+            label="has member",
+            description="d",
+            claims={"P6": [ref("Q141")], "P7": [ref("Q140"), ref("Q141")]},
+        ),
+        entity(
+            "P43",
+            kind=Kind.PROPERTY,
+            id="m49Code",
+            label="M49 code",
+            description="d",
+            claims={"P6": [ref("Q141")], "P7": [ref("Q140")]},
+        ),
+    ]
+
+
+def _grouping(qid: str, claims: dict[str, list[Value]]) -> Entity:
+    """A Grouping individual carrying these statements."""
+    return entity(
+        qid,
+        id=f"Grouping{qid}",
+        label=qid,
+        description="d",
+        claims={"P3": [ref("Q141")], **claims},
+    )
+
+
+def _validate(*nodes: Entity) -> Result:
+    """Validate these nodes over the domain and range vocabulary."""
+    return validate.validate(
+        graph(*bench_vocab(), *_domain_vocab(), *_range_vocab(), *nodes)
+    )
+
+
+def test_a4_values_inside_the_range_pass() -> None:
+    """A country reference and a region typed under Grouping are both in range."""
+    afg = entity("Q150", dcid="dcid:country/AFG", claims={"P3": [ref("Q140")]})
+    region = _grouping("Q151", {})
+    sahel = _grouping("Q152", {"P42": [ref("Q150"), ref("Q151")]})
+    result = _validate(afg, region, sahel)
+    assert advisories(result, "A4") == []
+
+
+def test_a4_text_with_a_data_type_in_the_range_passes() -> None:
+    """A DAC code is text, and its range is Text."""
+    result = _validate(_coded("Q150", typed="Q141"))
+    assert advisories(result, "A4") == []
+
+
+def test_a4_entity_outside_the_range_is_an_advisory() -> None:
+    """A grouping listing a currency as a member is A4, not an error."""
+    usd = entity("Q150", id="CurrencyUSD", label="u", claims={"P3": [ref("Q143")]})
+    sahel = _grouping("Q151", {"P42": [ref("Q150")]})
+    result = _validate(usd, sahel)
+    a4 = advisories(result, "A4")
+    assert [(f.entity, f.predicate) for f in a4] == [(sahel, "hasMember")]
+    assert a4[0].message == (
+        "hasMember's range does not cover dcid:CurrencyUSD, typed dcid:CurrencyUnit: "
+        "it lists dcid:Country, dcid:Grouping"
+    )
+    assert not any(f.rule == "A4" for f in result.errors)
+
+
+def test_a4_text_outside_the_range_is_reported_once() -> None:
+    """Text against a range of classes is A4, once however many codes there are."""
+    sahel = _grouping("Q150", {"P43": [lit("202"), lit("015")]})
+    a4 = advisories(_validate(sahel), "A4")
+    assert [f.message for f in a4] == [
+        "m49Code's range does not cover text: it lists dcid:Country"
+    ]
+
+
+def test_a4_entity_against_a_text_range_is_an_advisory() -> None:
+    """A DAC code pointing at a node, when its range is Text, is A4."""
+    afg = entity("Q150", dcid="dcid:country/AFG", claims={"P3": [ref("Q140")]})
+    sahel = _grouping("Q151", {"P40": [ref("Q150")]})
+    assert [f.entity for f in advisories(_validate(afg, sahel), "A4")] == [sahel]
+
+
+def test_a4_reference_target_with_no_typeof_is_a_skip() -> None:
+    """A member that is a reference with no typeOf has nothing to place: a skip."""
+    afg = entity("Q150", dcid="dcid:country/AFG")
+    sahel = _grouping("Q151", {"P42": [ref("Q150")]})
+    result = _validate(afg, sahel)
+    assert advisories(result, "A4") == []
+    assert [(f.entity, f.value) for f in skips(result, "A4")] == [
+        (sahel, "dcid:country/AFG")
+    ]
+
+
+def test_a4_not_run_without_the_range_includes_predicate() -> None:
+    """Two properties claiming rangeIncludes leave A4 nothing to read."""
+    second = entity("P60", kind=Kind.PROPERTY, dcid="dcid:rangeIncludes")
+    assert "A4" in _validate(second).not_run
 
 
 # --- Keystone: a failure in every layer, one validate() call --------------------
