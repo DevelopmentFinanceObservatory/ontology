@@ -11,8 +11,8 @@ from dfo_ontology.reader import BenchError
 
 from .graphbuild import bench_vocab, entity, graph, lit, ref
 
-# A class and a property pointing at it: two nodes to emit, and each referencing
-# the other keeps A2 quiet. Vocabulary alone would emit nothing, which would let
+# A class and a property pointing at it: two nodes to emit, and the property's
+# reference keeps A2 quiet. Vocabulary alone would emit nothing, which would let
 # the MCF assertions below pass against an empty file.
 CLEAN_GRAPH = graph(
     *bench_vocab(),

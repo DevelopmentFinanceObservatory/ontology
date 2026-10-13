@@ -2,10 +2,18 @@
 
 from dfo_ontology import config, validate
 from dfo_ontology.model import Entity, Kind
-from dfo_ontology.rules import shape
 from dfo_ontology.shapes import Shape, dispatch
 
-from .graphbuild import bench_vocab, entity, errors, graph, lit, ref, skips
+from .graphbuild import (
+    advisories,
+    bench_vocab,
+    entity,
+    errors,
+    graph,
+    lit,
+    ref,
+    skips,
+)
 
 # --- S1: reference -----------------------------------------------------------
 
@@ -193,8 +201,8 @@ def test_s4_class_passes() -> None:
     assert errors(result, "S4") == []
 
 
-def test_s4_working_set_predicate_not_opted_into_is_rejected() -> None:
-    """A relatedTo statement fails the gate: no shape's allowlist carries it (§9.1)."""
+def test_s4_rejects_a_data_commons_property() -> None:
+    """A relatedTo statement fails the gate: the DFO does not mint relatedTo."""
     related_to = entity("P9", kind=Kind.PROPERTY, dcid="dcid:relatedTo")
     e = entity(
         "Q10",
@@ -243,7 +251,7 @@ def test_s5_disallowed_predicate() -> None:
 
 
 def test_s5_classification_code_is_accepted_when_minted() -> None:
-    """classificationCode is dropped from no allowlist once the property exists."""
+    """A minted classificationCode is admitted on a value."""
     code = entity("P9", kind=Kind.PROPERTY, id="classificationCode")
     value_list = entity(
         "Q11", id="SomeEnum", claims={"P3": [ref("Q1")], "P4": [ref("Q3")]}
@@ -259,9 +267,14 @@ def test_s5_classification_code_is_accepted_when_minted() -> None:
     assert errors(result, "S5") == []
 
 
-def test_s5_daccode_not_allowed_on_a_value() -> None:
-    """dacCode never joins the value allowlist, minted or not."""
-    dac = entity("P10", kind=Kind.PROPERTY, id="dacCode")
+def test_s5_leaves_a_minted_property_to_its_domain() -> None:
+    """dacCode on a value is no shape error; a domain of Thing makes it A3 instead."""
+    dac = entity(
+        "P10",
+        kind=Kind.PROPERTY,
+        id="dacCode",
+        claims={"P6": [ref("Q4")], "P7": [ref("Q4")]},
+    )
     value_list = entity(
         "Q11", id="SomeEnum", claims={"P3": [ref("Q1")], "P4": [ref("Q3")]}
     )
@@ -273,8 +286,8 @@ def test_s5_daccode_not_allowed_on_a_value() -> None:
         claims={"P3": [ref("Q11")], "P10": [lit("913")]},
     )
     result = validate.validate(graph(*bench_vocab(), dac, value_list, e))
-    s5 = errors(result, "S5")
-    assert any(f.predicate == "dacCode" for f in s5)
+    assert errors(result, "S5") == []
+    assert [f.entity for f in advisories(result, "A3")] == [e]
 
 
 # --- S6: individual ---------------------------------------------------------------
@@ -314,7 +327,7 @@ def test_s6_rejects_anything_beyond_typeof() -> None:
 
 
 def test_s6_daccode_is_accepted_when_minted() -> None:
-    """dacCode is dropped from no allowlist once the property exists."""
+    """A minted dacCode is admitted on an individual."""
     dac = entity("P10", kind=Kind.PROPERTY, id="dacCode")
     a_class = entity(
         "Q11", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
@@ -391,29 +404,6 @@ def test_s6_carries_national_currency_of_more_than_once() -> None:
     graph_ = graph(*bench_vocab(), national, a_class, france, germany, e)
     result = validate.validate(graph_)
     assert errors(result, "S6") == []
-
-
-def test_s5_rejects_national_currency_of_on_a_value() -> None:
-    """nationalCurrencyOf is an individual's predicate; a value stating it is S5."""
-    national = entity("P18", kind=Kind.PROPERTY, id="nationalCurrencyOf")
-    a_list = entity("Q11", id="SomeEnum", claims={"P3": [ref("Q1")], "P4": [ref("Q3")]})
-    a_class = entity(
-        "Q12", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
-    )
-    france = entity("Q13", id="France", claims={"P3": [ref("Q12")]})
-    value = entity(
-        "Q10",
-        id="SomeValue",
-        label="v",
-        description="d",
-        claims={"P3": [ref("Q11")], "P18": [ref("Q13")]},
-    )
-    result = validate.validate(
-        graph(*bench_vocab(), national, a_list, a_class, france, value)
-    )
-    assert [(f.entity, f.predicate) for f in errors(result, "S5")] == [
-        (value, "nationalCurrencyOf")
-    ]
 
 
 def test_s6_iso_alpha_code_at_most_once() -> None:
@@ -537,21 +527,6 @@ def test_s6_imf_economy_code_at_most_once() -> None:
     assert any(f.predicate == "imfEconomyCode" for f in errors(result, "S6"))
 
 
-def test_m49_code_is_not_allowed_on_a_value() -> None:
-    """A value list's members are not coded by M49; only individuals are."""
-    m49 = entity("P18", kind=Kind.PROPERTY, id="m49Code")
-    a_list = entity("Q11", id="SomeEnum", claims={"P3": [ref("Q1")], "P4": [ref("Q3")]})
-    e = entity(
-        "Q10",
-        id="SomeValue",
-        label="v",
-        description="d",
-        claims={"P3": [ref("Q11")], "P18": [lit("015")]},
-    )
-    result = validate.validate(graph(*bench_vocab(), m49, a_list, e))
-    assert any(f.predicate == "m49Code" for f in errors(result, "S5"))
-
-
 def test_s6_states_its_members() -> None:
     """A grouping lists every member, so hasMember is uncapped."""
     has_member = entity("P17", kind=Kind.PROPERTY, id="hasMember")
@@ -572,29 +547,13 @@ def test_s6_states_its_members() -> None:
     assert errors(result, "S6") == []
 
 
-def test_has_member_is_not_allowed_on_a_value() -> None:
-    """An enumeration value has no members; only an individual does."""
-    has_member = entity("P17", kind=Kind.PROPERTY, id="hasMember")
-    a_list = entity("Q11", id="SomeEnum", claims={"P3": [ref("Q1")], "P4": [ref("Q3")]})
-    e = entity(
-        "Q10",
-        id="SomeValue",
-        label="v",
-        description="d",
-        claims={"P3": [ref("Q11")], "P17": [ref("Q11")]},
-    )
-    result = validate.validate(graph(*bench_vocab(), has_member, a_list, e))
-    assert any(f.predicate == "hasMember" for f in errors(result, "S5"))
-
-
 def test_daccode_is_accepted_on_an_entity_typed_to_a_reference() -> None:
     """An entity typed to a bare reference may still carry dacCode.
 
     This is the shape the organisation entities take: `Organization` is a
     reference carrying only its dcid and `instance of → Class`, so the chain
-    dead-ends and the entity is indeterminate rather than an individual. The
-    merged allowlist is the union of the value and individual lists, so the
-    code is allowed and the row still reaches codes.csv.
+    dead-ends and the entity is indeterminate rather than an individual. A
+    minted property is admitted either way, so the row still reaches codes.csv.
     """
     dac = entity("P10", kind=Kind.PROPERTY, id="dacCode")
     organization = entity("Q12", dcid="dcid:Organization", claims={"P3": [ref("Q1")]})
@@ -607,14 +566,13 @@ def test_daccode_is_accepted_on_an_entity_typed_to_a_reference() -> None:
     )
     result = validate.validate(graph(*bench_vocab(), dac, organization, e))
     assert errors(result, "S5|S6") == []
-    assert [f.rule for f in result.skips] == ["S5|S6"]
 
 
 def test_currency_properties_pass_on_the_merged_shape() -> None:
-    """S6's entries survive the merge into the value-or-individual allowlist.
+    """The currency properties pass on the value-or-individual shape.
 
     An individual whose class hangs under a reference dead-ends its chain and
-    dispatches to the merged shape, which is how the coded entities on both
+    dispatches to the merged shape, which is how the currencies on both
     benches are shaped.
     """
     alpha = entity("P11", kind=Kind.PROPERTY, id="iso4217AlphaCode")
@@ -655,14 +613,13 @@ def test_currency_properties_pass_on_the_merged_shape() -> None:
         )
     )
     assert errors(result, "S5|S6") == []
-    assert "S5|S6" in [f.rule for f in result.skips]
 
 
 # --- S5|S6: blind discrimination ---------------------------------------------------
 
 
-def test_s5_or_s6_blind_checks_the_union_and_records_one_skip() -> None:
-    """A blind reach chain checks the union allowlist and skips the discrimination once."""
+def test_s5_or_s6_blind_checks_the_union_without_a_skip() -> None:
+    """A chain stopping at a reference checks the union allowlist and records no skip."""
     code = entity("P9", kind=Kind.PROPERTY, id="classificationCode")
     reference = entity("Q12", dcid="schema:Organization")
     ambiguous_class = entity(
@@ -679,8 +636,7 @@ def test_s5_or_s6_blind_checks_the_union_and_records_one_skip() -> None:
         graph(*bench_vocab(), code, reference, ambiguous_class, e)
     )
     assert not any(f.entity is e for f in result.errors)
-    skip_findings = [f for f in result.skips if f.rule == "S5|S6" and f.entity is e]
-    assert len(skip_findings) == 1
+    assert result.skips == []
 
 
 # --- S7: undetermined shape ---------------------------------------------------------
@@ -777,28 +733,82 @@ def test_missing_id_property_blocks_s7_instead_of_firing_per_entity() -> None:
     assert not any(f.rule == "S7" for f in result.skips)
 
 
-# --- the code-property contract ----------------------------------------------------
+# --- minted properties --------------------------------------------------------
 
 
-def test_code_properties_and_shape_allowlists_agree() -> None:
-    """Every code property is carried by some shape, and vice versa.
+def test_a_newly_minted_property_needs_no_shape_change() -> None:
+    """A property just minted on the bench compiles on an individual, as often as stated."""
+    region_code = entity("P50", kind=Kind.PROPERTY, id="oecdRegionCode")
+    a_class = entity(
+        "Q11", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
+    )
+    e = entity(
+        "Q10",
+        id="SomeRegion",
+        label="r",
+        description="d",
+        claims={"P3": [ref("Q11")], "P50": [lit("A1"), lit("A2")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), region_code, a_class, e))
+    assert errors(result, "S6") == []
 
-    The contract lives in three places — config's tuple, the per-shape
-    allowlists, and G9's pinned uniqueness check. A property in one and not the
-    others validates cleanly but never reaches codes.csv, which is the silent
-    failure this guards. More than one shape may carry the same property: a
-    thing's code is the same fact whether the DFO owns the node or references
-    it.
-    """
-    base_shapes = [s for s in shape.ALLOWED if s is not Shape.VALUE_OR_INDIVIDUAL]
-    for property_id in config.CODE_PROPERTY_IDS:
-        carriers = [s for s in base_shapes if property_id in shape.ALLOWED[s]]
-        assert carriers, f"{property_id} is in config but no shape allows it"
 
-    allowed = {p for s in base_shapes for p in shape.ALLOWED[s]}
-    known = set(config.CODE_PROPERTY_IDS)
-    stray = {p for p in allowed & {"wbCode", *known} if p not in known}
-    assert not stray, f"{stray} is allowed by a shape but missing from config"
+def test_a_data_commons_property_stays_rejected() -> None:
+    """A reused Data Commons property has no domain on the bench, so it is S6."""
+    contained = entity("P50", kind=Kind.PROPERTY, dcid="dcid:containedInPlace")
+    a_class = entity(
+        "Q11", id="SomeClass", claims={"P3": [ref("Q1")], "P4": [ref("Q4")]}
+    )
+    e = entity(
+        "Q10",
+        id="SomeRegion",
+        label="r",
+        description="d",
+        claims={"P3": [ref("Q11")], "P50": [ref("Q11")]},
+    )
+    result = validate.validate(graph(*bench_vocab(), contained, a_class, e))
+    assert [(f.predicate, f.message) for f in errors(result, "S6")] == [
+        ("containedInPlace", "not allowed on an individual")
+    ]
+
+
+def test_s1_reference_rejects_a_property_codes_csv_does_not_read() -> None:
+    """A reference emits no node, so anything but a code on it would be lost."""
+    national = entity("P18", kind=Kind.PROPERTY, id="nationalCurrencyOf")
+    e = entity("Q10", dcid="dcid:country/FRA", claims={"P18": [ref("Q10")]})
+    result = validate.validate(graph(*bench_vocab(), national, e))
+    assert [(f.predicate, f.message) for f in errors(result, "S1")] == [
+        (
+            "nationalCurrencyOf",
+            "a reference emits no node, so it may carry only the code properties "
+            "codes.csv reads",
+        )
+    ]
+
+
+def test_s1_reference_holds_a_single_valued_code_to_one() -> None:
+    """The one-per-node codes are capped on a reference as on a DFO node."""
+    imf = entity("P21", kind=Kind.PROPERTY, id="imfEconomyCode")
+    e = entity("Q10", dcid="dcid:country/KEN", claims={"P21": [lit("664"), lit("KEN")]})
+    result = validate.validate(graph(*bench_vocab(), imf, e))
+    assert [(f.predicate, f.message) for f in errors(result, "S1")] == [
+        ("imfEconomyCode", "must be stated at most once")
+    ]
+
+
+def test_every_code_property_may_sit_on_a_reference() -> None:
+    """Each property codes.csv reads is admitted on a reference once minted."""
+    minted = [
+        entity(f"P{50 + i}", kind=Kind.PROPERTY, id=name)
+        for i, name in enumerate(config.CODE_PROPERTY_IDS)
+    ]
+    e = entity(
+        "Q10",
+        dcid="dcid:country/KEN",
+        claims={prop.qid or "": [lit("1")] for prop in minted},
+    )
+    result = validate.validate(graph(*bench_vocab(), *minted, e))
+    assert errors(result, "S1") == []
 
 
 # --- isProvisional -------------------------------------------------------------

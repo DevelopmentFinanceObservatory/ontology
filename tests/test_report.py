@@ -343,7 +343,7 @@ def test_success_with_skip_and_advisory_sections() -> None:
             Finding(
                 "A2",
                 entity=orphan,
-                message="orphan — nothing references it and it references nothing",
+                message="orphan — nothing on the bench points at it",
             ),
         ],
     )
@@ -354,7 +354,7 @@ def test_success_with_skip_and_advisory_sections() -> None:
     )
     assert (
         f"  A2  {report.entity_header(orphan)}: "
-        "orphan — nothing references it and it references nothing" in text
+        "orphan — nothing on the bench points at it" in text
     )
     assert text.rstrip("\n").endswith(report.FOOTER)
 

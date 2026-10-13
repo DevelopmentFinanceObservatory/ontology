@@ -25,11 +25,11 @@ def compiled() -> tuple[Graph, Result]:
 
 
 def test_bench_validates_clean() -> None:
-    """No errors, one indeterminate skip on the individual, one orphan advisory."""
+    """No errors, skips or advisories."""
     _, result = compiled()
     assert result.errors == []
-    assert [f.rule for f in result.skips] == ["S5|S6"]
-    assert [f.rule for f in result.advisories] == ["A2"]
+    assert result.skips == []
+    assert result.advisories == []
 
 
 def test_bench_emits_golden_mcf() -> None:

@@ -219,7 +219,7 @@ def test_dispatch_s6_individual() -> None:
 
 
 def test_dispatch_s5_or_s6_blind() -> None:
-    """A dead-end reachability chain dispatches the value/individual union, skipped."""
+    """A chain stopping at a reference dispatches the value/individual union."""
     reference = entity("Q12", dcid="schema:Organization")
     ambiguous_class = entity(
         "Q11", id="Ambiguous", claims={"P3": [ref("Q1")], "P4": [ref("Q12")]}
@@ -227,8 +227,7 @@ def test_dispatch_s5_or_s6_blind() -> None:
     e = entity("Q10", id="MaybeValueOrIndividual", claims={"P3": [ref("Q11")]})
     g = graph(*bench_vocab(), e, ambiguous_class, reference)
     result = shapes.dispatch(g, e)
-    assert result.shape is Shape.VALUE_OR_INDIVIDUAL
-    assert result.skip is True
+    assert result == Dispatch(Shape.VALUE_OR_INDIVIDUAL)
 
 
 def test_dispatch_s7_typeof_absent() -> None:

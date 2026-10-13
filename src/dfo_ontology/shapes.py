@@ -4,7 +4,7 @@ Nothing here is derived from inbound edges — `reach` walks only an entity's ow
 stated `subClassOf` chain, and `dispatch` reads only its own stated `typeOf`.
 """
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -133,6 +133,17 @@ def is_property(graph: Graph, entity: Entity) -> bool | None:
     return _resolves_to(graph, entity, PROPERTY)
 
 
+def is_minted_property(entity: Entity) -> bool:
+    """Whether the entity is a working-set property the DFO mints.
+
+    Args:
+        entity: the entity to check.
+    """
+    return (
+        entity.kind is Kind.PROPERTY and entity.id is not None and entity.dcid is None
+    )
+
+
 def is_datatype(graph: Graph, entity: Entity) -> bool | None:
     """Whether the entity's stated `typeOf` resolves to the DataType well-known item.
 
@@ -213,6 +224,31 @@ def _reach(
     if qid is not None:
         memo[qid] = result
     return result
+
+
+def within(graph: Graph, entity: Entity, classes: Iterable[Entity]) -> bool:
+    """Whether the entity is one of these classes, or sits under one.
+
+    Walks only the entity's own stated `subClassOf` chain, so a class Data
+    Commons places above a reference is out of sight.
+
+    Args:
+        graph: the graph to walk.
+        entity: the class to place.
+        classes: the classes it may be, or sit under.
+    """
+    targets = {c.qid for c in classes}
+    seen: set[str | None] = set()
+    pending = [entity]
+    while pending:
+        current = pending.pop()
+        if current.qid in seen:
+            continue
+        seen.add(current.qid)
+        if current.qid in targets:
+            return True
+        pending.extend(target for _, target in graph.resolved(current, "subClassOf"))
+    return False
 
 
 def cycles(graph: Graph, predicate: str) -> list[tuple[str, ...]]:
@@ -359,11 +395,7 @@ def dispatch(
     if outcome is Reach.THING:
         return Dispatch(Shape.INDIVIDUAL)
     if outcome is Reach.BLIND:
-        return Dispatch(
-            Shape.VALUE_OR_INDIVIDUAL,
-            reason="typeOf target's subClassOf chain dead-ends at a reference",
-            skip=True,
-        )
+        return Dispatch(Shape.VALUE_OR_INDIVIDUAL)
     if outcome is Reach.BOTH:
         reason = "typeOf target's subClassOf chain reaches both Thing and Enumeration"
     else:
