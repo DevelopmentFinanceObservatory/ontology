@@ -2,11 +2,3 @@ bench: testing (https://dfo-testing-2.wikibase.cloud)
 
 1 class, 2 property, 2 value list, 4 value, 0 individual, 1 indeterminate
 11 reference entities emitted no node
-
-Skipped checks
-  S5|S6  AFD — "Agence Française de Développement" (Q15)  typeOf target's subClassOf chain dead-ends at a reference
-
-Advisories
-  A2  AFD — "Agence Française de Développement" (Q15): orphan — nothing references it and it references nothing
-
-See docs/validation.md for what each rule id checks.
