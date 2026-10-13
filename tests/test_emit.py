@@ -6,8 +6,8 @@ from dfo_ontology.emit import emission_order, emit, node_text, render_value
 from dfo_ontology.model import Kind
 from tests.graphbuild import bench_vocab, entity, graph, lit, ref
 
-CONFIG = Config(bench="testing")
-HEADER = "# bench: testing (https://dfo-testing-2.wikibase.cloud)\n"
+CONFIG = Config(bench="dev")
+HEADER = "# bench: dev (https://dfo-dev.wikibase.cloud)\n"
 
 
 def test_emission_order_chain_and_tiebreak() -> None:

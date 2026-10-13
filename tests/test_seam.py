@@ -11,7 +11,7 @@ modules in one pipeline.
 from dfo_ontology import codes, emit, reader, report, validate
 from dfo_ontology.config import Config
 
-CONFIG = Config(bench="testing")
+CONFIG = Config(bench="dev")
 
 
 def _snak(property_qid: str, datavalue: dict) -> dict:
@@ -146,7 +146,7 @@ PAYLOADS: list[dict] = [
 ]
 
 EXPECTED_MCF = (
-    "# bench: testing (https://dfo-testing-2.wikibase.cloud)\n"
+    "# bench: dev (https://dfo-dev.wikibase.cloud)\n"
     "\n"
     "Node: dcid:FinancingActivity\n"
     "typeOf: schema:Class\n"
@@ -177,7 +177,7 @@ EXPECTED_MCF = (
 )
 
 EXPECTED_REPORT = (
-    "bench: testing (https://dfo-testing-2.wikibase.cloud)\n"
+    "bench: dev (https://dfo-dev.wikibase.cloud)\n"
     "\n"
     "1 class, 1 property, 1 value list, 1 value, 0 individual\n"
     "8 reference entities emitted no node\n"

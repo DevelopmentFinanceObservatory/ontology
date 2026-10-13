@@ -15,7 +15,7 @@ from dfo_ontology.model import Graph, Result
 
 FIXTURE = Path(__file__).parent / "fixtures" / "bench.json"
 GOLDENS = Path(__file__).parent / "goldens"
-CONFIG = Config(bench="testing")
+CONFIG = Config(bench="dev")
 
 
 def compiled() -> tuple[Graph, Result]:

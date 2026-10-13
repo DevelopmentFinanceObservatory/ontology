@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Ontology for the Development Finance Observatory built for Data Commons"
 
 authors = [
-  { name = "Luca Picci", email = "luca.picci@one.org" }
+    { name = "ONE Campaign" },
+    { name = "Luca Picci", email = "luca.picci@one.org" },
+    { name = "Jorge Rivera", email = "jorge.rivera@one.org" },
 ]
 
 readme = "README.md"

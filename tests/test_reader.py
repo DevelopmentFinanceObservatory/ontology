@@ -7,7 +7,7 @@ from dfo_ontology import reader
 from dfo_ontology.config import Config
 from dfo_ontology.model import Kind, Literal, Ref
 
-CONFIG = Config(bench="testing")
+CONFIG = Config(bench="dev")
 
 
 def _snak(property_qid: str, datavalue: dict) -> dict:
@@ -246,7 +246,7 @@ def test_fetch_entities_batches_at_boundary() -> None:
         ids = request.url.params["ids"].split("|")
         return httpx.Response(200, json={"entities": {qid: {"id": qid} for qid in ids}})
 
-    config = Config(bench="testing", namespaces=(120,), batch_size=5)
+    config = Config(bench="dev", namespaces=(120,), batch_size=5)
     payloads = reader.fetch_entities(
         config=config, transport=httpx.MockTransport(handler)
     )
@@ -296,7 +296,7 @@ def test_every_request_is_a_get() -> None:
             )
         return httpx.Response(200, json={"entities": {"Q1": {"id": "Q1"}}})
 
-    config = Config(bench="testing", namespaces=(120, 122))
+    config = Config(bench="dev", namespaces=(120, 122))
     reader.fetch_entities(config=config, transport=httpx.MockTransport(handler))
     assert calls
     assert all(call.method == "GET" for call in calls)

@@ -1,4 +1,4 @@
-bench: testing (https://dfo-testing-2.wikibase.cloud)
+bench: dev (https://dfo-dev.wikibase.cloud)
 
 1 class, 2 property, 2 value list, 4 value, 0 individual, 1 indeterminate
 11 reference entities emitted no node
