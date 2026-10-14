@@ -1,148 +1,115 @@
-# DFO Ontology
+# DFO ontology
 
-The concept store for the **Development Finance Observatory (DFO)**: a shared, explicit model
-of development-finance concepts and how they relate, authored in a Wikibase instance and
-compiled to [MCF](https://github.com/datacommonsorg/data/blob/master/docs/mcf_format.md) for
-the DFO's custom Data Commons.
+The compiler for the ontology of the
+[Development Finance Observatory](https://developmentfinance.org/) (DFO), which turns the
+ontology into schema for the DFO's Data Commons.
 
-This repo produces **schema MCF only** — the concept layer. Observations, source data, and the
-statistical pipeline live in separate repos. The compiler reads the whole Wikibase graph,
-validates it against the full rulebook, and emits one deterministic MCF file, a
-code mapping, and a report.
-Nothing is emitted unless every check passes.
+The DFO ontology is a model of development finance and the semantic layer of the DFO. It
+names the concepts in the domain and defines how they relate to each other. The ontology
+holds concepts, not figures, and is written and maintained in Wikibase at
+**[developmentfinance.wikibase.cloud](https://developmentfinance.wikibase.cloud)**.
 
-## Installation
+This repository holds the compiler that reads the ontology from Wikibase, validates it,
+and writes it as [MCF](https://github.com/datacommonsorg/data/blob/master/docs/mcf_format.md),
+the format Data Commons uses for schema.
 
-This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+## Browse the ontology
+
+The wiki can be read without an account.
+
+- [Main page](https://developmentfinance.wikibase.cloud/wiki/Main_Page): a starting point
+  for exploring the ontology.
+- [DFO ontology overview](https://developmentfinance.wikibase.cloud/wiki/Help:DFO_ontology_overview):
+  what the ontology holds and how its concepts relate.
+- [Editor guide](https://developmentfinance.wikibase.cloud/wiki/Help:Editor_guide): for
+  people who add or change concepts.
+- [Query service](https://developmentfinance.wikibase.cloud/query/): SPARQL access to the
+  whole ontology.
+
+## How the compiler works
+
+Each concept on the wiki becomes one MCF node. Its label, description and aliases become
+the node's `name`, `description` and `alternateName`, and its statements become the
+node's properties. For example, the
+[loan](https://developmentfinance.wikibase.cloud/wiki/Item:Q921) item compiles to:
+
+```text
+Node: dcid:Loan
+typeOf: dcid:FinancingResourceEnum
+name: "loan"
+description: "Direct, non-tradable credit repaid over time on agreed terms."
+specializationOf: dcid:DebtInstrument
+```
+
+Where Data Commons already defines a concept, such as `Country` or `Organization`, the
+wiki refers to it by its dcid instead of defining it again, and the compiler emits no
+node for it.
+
+The compiler reads the whole wiki and validates the entire graph before writing
+anything. If any check fails, it writes no MCF, and the report lists every problem along
+with the item it concerns.
+
+## Quick start
+
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 or later.
 
 ```bash
 uv sync
+uv run dfo-ontology compile --bench prod
 ```
 
-## Project structure
+`--bench` selects the wiki to read; `prod` is the published ontology at
+developmentfinance.wikibase.cloud. Reading requires network access but no credentials.
+The run writes three files to `output/prod/`:
 
-- `src/dfo_ontology/` — the compiler (reader → validator → emitter → report) and bench tooling
-- `tests/` — unit, emitter, and golden-file tests
-- `output/<bench>/` — compiled MCF, codes.csv, and run reports (gitignored; regenerated on every run)
+- `dfo.mcf`: the schema, one node per concept, with a header comment naming the wiki it
+  was compiled from.
+- `codes.csv`: a mapping from publishers' codes, such as CRS purpose codes or ISO
+  currency codes, to the dcids they stand for, which pipelines use to translate the
+  codes in source data. See [docs/code-mapping.md](docs/code-mapping.md).
+- `report.txt`: a summary of the run, covering what was compiled, code coverage,
+  provisional nodes and advisories, or every error when the run fails. See
+  [docs/validation.md](docs/validation.md) for what each rule checks and how to fix it.
 
-## Benches
+`report.txt` is always written. A failing run writes no MCF or `codes.csv` and deletes
+any left by an earlier run, so the output folder never holds files that contradict the
+report.
 
-There are three Wikibase instances, and `compile` reads whichever one you name:
+| option                  | effect                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `--check`               | Validate and write the report, without the MCF or `codes.csv`.                                      |
+| `--exclude-provisional` | Leave provisional nodes out of the MCF and `codes.csv`.                                             |
+| `-o PATH`               | Write the MCF to `PATH`, with `report.txt` and `codes.csv` beside it, instead of `output/<bench>/`. |
 
-| `--bench` | instance                        | browse                                    |
-| --------- | ------------------------------- | ----------------------------------------- |
-| `prod`    | Development Finance Observatory | https://developmentfinance.wikibase.cloud |
-| `testing` | DFO testing 2                   | https://dfo-testing-2.wikibase.cloud      |
-| `dev`     | DFO Dev                         | https://dfo-dev.wikibase.cloud            |
+Nodes flagged `isProvisional` on the wiki are not final: their name, description or
+place in the model may still change. The report lists them, and they are included in the
+output unless `--exclude-provisional` is passed. That run fails (rule E1) if a node that
+remains depends on one that was left out.
 
-There is no default: a `compile` that names no bench is a usage error, so no run
-reads an instance you didn't choose. The report and the MCF record which one they
-came from — `report.txt` on its first line, `dfo.mcf` in a comment atop the file;
-`codes.csv` stays comment-free so `pandas.read_csv` loads it bare, and the report
-beside it names the bench. Each bench writes to its own directory, so compiling
-one never overwrites another's output.
+| exit code | meaning                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------- |
+| 0         | Validation passed.                                                                       |
+| 1         | Validation failed. The report is also written to stderr.                                 |
+| 2         | The wiki could not be read, the output could not be written, or the command was invalid. |
 
-## Running the compiler
+## Development
+
+The dev wiki, [dfo-dev.wikibase.cloud](https://dfo-dev.wikibase.cloud), is a working
+copy of the ontology where changes are tested before they are made on prod. Compile it
+with `--bench dev`; its output goes to `output/dev/`.
+
+The compiler lives in `src/dfo_ontology/`: `reader.py` reads the wiki, `validate.py`
+runs the checks in `rules/`, and `emit.py`, `codes.py` and `report.py` write the three
+output files.
+
+With [just](https://github.com/casey/just) installed:
 
 ```bash
-# write output/testing/dfo.mcf, codes.csv, and report.txt
-uv run dfo-ontology compile --bench testing
-
-# validate and write the report, skip the MCF
-uv run dfo-ontology compile --bench prod --check
-
-# leave nodes flagged isProvisional out of the MCF and codes.csv
-uv run dfo-ontology compile --bench prod --exclude-provisional
+just check            # ruff lint, ruff format check, ty and pytest, as in CI
+just fmt              # fix lint and formatting
+just compile prod     # compile a wiki; options go after the name
 ```
 
-Reading a bench is unauthenticated — `compile` and `compile --check` both need
-network access but no credentials. `-o/--output` moves all three artifacts and drops
-the per-bench directory: `uv run dfo-ontology compile --bench prod -o build/dfo.mcf`
-writes `build/dfo.mcf`, `build/codes.csv`, and `build/report.txt`.
-
-A node flagged `isProvisional` → True is not final yet, and a passing report
-lists every one under `Provisional`. They are written to the MCF and codes.csv
-like any other node unless `--exclude-provisional` is given. Leaving them out
-fails the run (E1) if a node that stays in would point at one.
-
-`report.txt` is always written, whether the run passes or fails. `dfo.mcf` and
-`codes.csv` are written only when validation passes and `--check` wasn't given —
-the compiler never emits for a graph that failed a check, and a failing run
-deletes anything an earlier run left behind rather than leaving artifacts that
-read as current. Exit codes:
-
-| code | meaning                                                                                                                                                 |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | success — validation passed (and the MCF and codes.csv were written, unless `--check`)                                                                  |
-| 1    | validation failed — no MCF, the report went to stderr too                                                                                               |
-| 2    | the bench couldn't be read, the output path couldn't be written, or the command-line usage was wrong (no subcommand, no `--bench`, or an unknown bench) |
-
-See [`docs/validation.md`](docs/validation.md) for what every rule id in a
-report checks and how to fix it.
-
-## The code mapping
-
-`codes.csv` maps source codes to the DFO dcids they stand for, so a data
-pipeline can translate the codes in raw data (a CRS purpose column holding
-"120", a DAC provider column holding "913") into references to our schema
-nodes without parsing MCF:
-
-```csv
-list,code,dcid,label,property
-dcid:CRSPurposeEnum,120,dcid:CRSPurposeHealth,health (CRS purpose),classificationCode
-dcid:CurrencyUnit,918,dcid:CurrencyEUR,Euro,dacCode
-dcid:Organization,918,dcid:EuropeanUnionInstitutions,European Union institutions,dacCode
-```
-
-Dcids carry the same namespace prefix the MCF uses — whichever one the compiler
-is set to mint under.
-
-One row per code stated on the bench, sorted by (list, code, dcid). Entities
-without a code produce no row — most lists we mint mirror no external scheme,
-so none of their values carry one.
-
-- **list** — the value list or class the code was assigned within, named by its
-  dcid. A code means something only inside its own set, so a consumer filters by
-  this before joining. A class counts as much as a value list, and a class that
-  is a reference to a base graph node is named by the dcid it carries. The
-  column is empty only when the entity's `typeOf` does not resolve.
-- **code** — the code literal, verbatim.
-- **dcid** — the entity's own dcid.
-- **label** — the entity's label, for a human reading the file.
-- **property** — which property stated the code: `classificationCode` for a
-  value in a coded scheme, `dacCode` for a thing in the DAC register,
-  `iso4217AlphaCode` for a currency's ISO code. This is what tells the kinds of
-  row apart, and one entity can carry rows of more than one kind: a currency
-  renders a row per DAC code it answers to and another for its ISO code, all
-  naming the same dcid.
-
-How far uniqueness goes. `(list, code, property)` is the key. A classification
-code is unique within its list (G9), and an external register's code is unique
-within the class it was assigned to, so the three columns together identify one
-dcid. Neither the code alone nor the code with the property is enough: a
-register can number two kinds of thing from one sequence, and then only the
-class tells the rows apart. That is why the column is filled for every coded
-entity rather than for minted value lists alone.
-
-The success report counts coverage for every type that holds a coded entity
-("4 of 4 coded") and names any uncoded ones, so a forgotten code statement
-shows up at compile time rather than as an unmatched code in the pipeline.
-
-## Code quality
-
-```bash
-uv run ruff check .                 # lint
-uv run ruff format .                # format
-uv run ty check src/dfo_ontology    # type check
-uv run pytest                       # tests
-```
-
-Pre-commit hooks run these automatically. To run them by hand:
-
-```bash
-uv run pre-commit run --all-files
-```
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+Run `uv run pre-commit install` once to install the commit hooks. They run ruff, ty,
+codespell and a Markdown formatter, but not the tests. Some hooks rewrite files, so
+re-run the tests after a hook changes anything.
