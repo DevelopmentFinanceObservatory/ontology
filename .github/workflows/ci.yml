@@ -3,12 +3,12 @@ name: CI
 # A draft pull request runs no jobs. `ready_for_review` is in the types so that
 # marking it ready starts the run: without it the skipped jobs would stand as
 # passing required checks on the commit and nothing would have tested it. A push
-# to main still runs, as the only test of the merged tree.
+# to dev or main still runs, as the only test of the merged tree.
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
   pull_request:
-    branches: [main]
+    branches: [dev, main]
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
@@ -74,10 +74,9 @@ jobs:
       - name: Run tests
         run: uv run pytest --cov='src/dfo_ontology' --cov-report=xml --cov-report=term
 
-      # Coverage reports to ONEcampaign's Codecov project only.
       - name: Upload coverage
         uses: codecov/codecov-action@v7
-        if: matrix.python-version == '3.13' && github.repository_owner == 'ONEcampaign'
+        if: matrix.python-version == '3.13'
         with:
           files: ./coverage.xml
 
