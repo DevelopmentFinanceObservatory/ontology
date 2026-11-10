@@ -1,30 +1,23 @@
 # DFO ontology
 
-The compiler for the ontology of the
-[Development Finance Observatory](https://developmentfinance.org/) (DFO), which turns the
-ontology into schema for the DFO's Data Commons.
+The ontology of development finance for the [Development Finance Observatory](https://github.com/DevelopmentFinanceObservatory) (DFO), and the compiler that turns it into schema for Data Commons.
 
-The DFO ontology is a model of development finance and the semantic layer of the DFO. It
-names the concepts in the domain and defines how they relate to each other. The ontology
-holds concepts, not figures, and is written and maintained in Wikibase at
-**[developmentfinance.wikibase.cloud](https://developmentfinance.wikibase.cloud)**.
+The ontology names the concepts of the domain, such as loans, debt instruments, currencies and the code lists publishers use, and defines how they relate. It holds concepts, not figures. It is written and maintained in Wikibase at [developmentfinance.wikibase.cloud](https://developmentfinance.wikibase.cloud). This repository holds the compiler that reads it from Wikibase, validates it, and writes it as [MCF](https://github.com/datacommonsorg/data/blob/master/docs/mcf_format.md), the format [Google Data Commons](https://datacommons.org) uses for schema.
 
-This repository holds the compiler that reads the ontology from Wikibase, validates it,
-and writes it as [MCF](https://github.com/datacommonsorg/data/blob/master/docs/mcf_format.md),
-the format Data Commons uses for schema.
+The DFO is an initiative of [ONE Data](https://data.one.org), and its public site is [developmentfinance.org](https://developmentfinance.org/). This repository is one part of it, and the [organisation profile](https://github.com/DevelopmentFinanceObservatory) maps the others.
+
+This repository is under active development. Interfaces, schemas, and data may change without notice.
 
 ## Browse the ontology
 
 The wiki can be read without an account.
 
-- [Main page](https://developmentfinance.wikibase.cloud/wiki/Main_Page): a starting point
-  for exploring the ontology.
-- [DFO ontology overview](https://developmentfinance.wikibase.cloud/wiki/Help:DFO_ontology_overview):
-  what the ontology holds and how its concepts relate.
-- [Editor guide](https://developmentfinance.wikibase.cloud/wiki/Help:Editor_guide): for
-  people who add or change concepts.
-- [Query service](https://developmentfinance.wikibase.cloud/query/): SPARQL access to the
-  whole ontology.
+- [Main page](https://developmentfinance.wikibase.cloud/wiki/Main_Page): a starting point for exploring the ontology.
+- [DFO ontology overview](https://developmentfinance.wikibase.cloud/wiki/Help:DFO_ontology_overview): what the ontology holds and how its concepts relate.
+- [Editor guide](https://developmentfinance.wikibase.cloud/wiki/Help:Editor_guide): for people who add or change concepts.
+- [Query service](https://developmentfinance.wikibase.cloud/query/): SPARQL access to the whole ontology.
+
+To propose a new concept or a correction, open an issue and link the wiki page it concerns. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## How the compiler works
 
@@ -43,22 +36,23 @@ specializationOf: dcid:DebtInstrument
 
 Where Data Commons already defines a concept, such as `Country` or `Organization`, the
 wiki refers to it by its dcid instead of defining it again, and the compiler emits no
-node for it.
+node for it. The MCF therefore extends the Data Commons schema. It adds the
+development-finance concepts and reuses the Data Commons ones.
 
 The compiler reads the whole wiki and validates the entire graph before writing
 anything. If any check fails, it writes no MCF, and the report lists every problem along
 with the item it concerns.
 
-## Quick start
+## Getting started
 
-Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 or later.
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.13 or later. Nothing here needs ONE's Google Cloud project.
 
 ```bash
 uv sync
 uv run dfo-ontology compile --bench prod
 ```
 
-`--bench` selects the wiki to read; `prod` is the published ontology at
+`--bench` selects the wiki to read, and `prod` is the published ontology at
 developmentfinance.wikibase.cloud. Reading requires network access but no credentials.
 The run writes three files to `output/prod/`:
 
@@ -81,8 +75,8 @@ report.
 | `--exclude-provisional` | Leave provisional nodes out of the MCF and `codes.csv`.                                             |
 | `-o PATH`               | Write the MCF to `PATH`, with `report.txt` and `codes.csv` beside it, instead of `output/<bench>/`. |
 
-Nodes flagged `isProvisional` on the wiki are not final: their name, description or
-place in the model may still change. The report lists them, and they are included in the
+Nodes flagged `isProvisional` on the wiki are not final. Their name, description or
+place in the model may change. The report lists them, and they are included in the
 output unless `--exclude-provisional` is passed. That run fails (rule E1) if a node that
 remains depends on one that was left out.
 
@@ -92,24 +86,16 @@ remains depends on one that was left out.
 | 1         | Validation failed. The report is also written to stderr.                                 |
 | 2         | The wiki could not be read, the output could not be written, or the command was invalid. |
 
-## Development
+## Documentation
 
-The dev wiki, [dfo-dev.wikibase.cloud](https://dfo-dev.wikibase.cloud), is a working
-copy of the ontology where changes are tested before they are made on prod. Compile it
-with `--bench dev`; its output goes to `output/dev/`.
+- [docs/validation.md](docs/validation.md): every validation rule, what it checks and how to fix it.
+- [docs/code-mapping.md](docs/code-mapping.md): the layout and use of `codes.csv`.
+- [docs/development.md](docs/development.md): the source layout, the dev wiki and the maintainer workflow.
 
-The compiler lives in `src/dfo_ontology/`: `reader.py` reads the wiki, `validate.py`
-runs the checks in `rules/`, and `emit.py`, `codes.py` and `report.py` write the three
-output files.
+## Contributing
 
-With [just](https://github.com/casey/just) installed:
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-```bash
-just check            # ruff lint, ruff format check, ty and pytest, as in CI
-just fmt              # fix lint and formatting
-just compile prod     # compile a wiki; options go after the name
-```
+## Licence
 
-Run `uv run pre-commit install` once to install the commit hooks. They run ruff, ty,
-codespell and a Markdown formatter, but not the tests. Some hooks rewrite files, so
-re-run the tests after a hook changes anything.
+MIT. See [LICENSE](LICENSE).
